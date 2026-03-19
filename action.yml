@@ -1,0 +1,37 @@
+name: "StackFactor Interoperability"
+description: "Publishes integrations and agents to StackFactor from repository configuration files"
+author: "StackFactor Inc"
+
+branding:
+  icon: "upload-cloud"
+  color: "blue"
+
+inputs:
+  api-token:
+    description: "StackFactor API authorization token"
+    required: true
+  api-url:
+    description: "StackFactor API base URL (overrides environment)"
+    required: false
+  environment:
+    description: "Target environment: production, nonprod, testing, development"
+    required: false
+    default: "production"
+  config-path:
+    description: "Path to the StackFactor configuration file (YAML) relative to repository root"
+    required: false
+    default: "src/config.yaml"
+  publish:
+    description: "Whether to publish the integration after updating (true/false)"
+    required: false
+    default: "true"
+
+outputs:
+  integration-id:
+    description: "The ID of the created or updated integration"
+  status:
+    description: "The result status: created, updated, published, or failed"
+
+runs:
+  using: "node20"
+  main: "dist/index.js"

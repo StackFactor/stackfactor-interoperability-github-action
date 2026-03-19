@@ -1,0 +1,8 @@
+{
+  "chat.tools.terminal.autoApprove": {
+    "/^mkdir -p /tmp/sf-api-inspect && cd /tmp/sf-api-inspect && npm init -y > /dev/null 2>&1 && npm install @stackfactor/client-api --save > /dev/null 2>&1 && ls node_modules/@stackfactor/client-api/$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  }
+}
