@@ -87784,7 +87784,9 @@ async function run() {
     // _id is required — without it, every run would create a duplicate integration
     const integrationId = config._id;
     if (!integrationId) {
-      throw new Error("_id is required in config.yaml. Each integration must have a stable _id to prevent duplicates.");
+      throw new Error(
+        "_id is required in config.yaml. Each integration must have a stable _id to prevent duplicates.",
+      );
     }
 
     // The config dir is used to resolve relative file paths (code, batchCode)
@@ -87795,7 +87797,11 @@ async function run() {
 
     // Update the integration
     core.info(`Updating integration ${integrationId}...`);
-    await setIntegrationInformation(integrationId, payload, apiToken);
+    await setIntegrationInformation(
+      integrationId,
+      payload,
+      apiToken,
+    );
     core.info(`Integration ${integrationId} updated successfully.`);
     let status = "updated";
 
@@ -87813,6 +87819,12 @@ async function run() {
 
     core.info(`Done. Status: ${status}`);
   } catch (error) {
+    if (error.response) {
+      core.error(`API response status: ${error.response.status}`);
+      core.error(`API response data: ${JSON.stringify(error.response.data, null, 2)}`);
+    } else if (error.request) {
+      core.error(`No response received from API: ${error.message}`);
+    }
     core.setFailed(`Action failed: ${error.message}`);
   }
 }
@@ -87848,7 +87860,11 @@ async function buildPayload(config, workspace, configDir) {
 
   // Read and inline the batch code file
   if (config.batchCode) {
-    payload.batchCode = await readCodeFile(config.batchCode, workspace, configDir);
+    payload.batchCode = await readCodeFile(
+      config.batchCode,
+      workspace,
+      configDir,
+    );
   }
 
   // Map constants and variables

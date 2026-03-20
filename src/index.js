@@ -70,6 +70,14 @@ async function run() {
 
     core.info(`Done. Status: ${status}`);
   } catch (error) {
+    if (error.response) {
+      core.error(`API response status: ${error.response.status}`);
+      core.error(
+        `API response data: ${JSON.stringify(error.response.data, null, 2)}`,
+      );
+    } else if (error.request) {
+      core.error(`No response received from API: ${error.message}`);
+    }
     core.setFailed(`Action failed: ${error.message}`);
   }
 }
