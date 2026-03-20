@@ -87761,6 +87761,14 @@ async function run() {
     const apiUrl = core.getInput("api-url", { required: true });
     const configPath = core.getInput("config-path") || "src/config.yaml";
     const shouldPublish = core.getInput("publish") !== "false";
+    const variablesJson = core.getInput("variables") || "{}";
+
+    let variables;
+    try {
+      variables = JSON.parse(variablesJson);
+    } catch (e) {
+      throw new Error(`Invalid JSON in 'variables' input: ${e.message}`);
+    }
 
     // The @stackfactor/client-api creates its axios client at import time,
     // so we must update client.defaults.baseURL directly at runtime.
@@ -87772,7 +87780,8 @@ async function run() {
     const fullConfigPath = (0,external_node_path_namespaceObject.resolve)(workspace, configPath);
     core.info(`Reading configuration from ${fullConfigPath}`);
 
-    const configContent = await (0,promises_namespaceObject.readFile)(fullConfigPath, "utf-8");
+    const rawContent = await (0,promises_namespaceObject.readFile)(fullConfigPath, "utf-8");
+    const configContent = substituteVariables(rawContent, variables);
     const config = jsYaml.load(configContent);
 
     core.info(`Configuration loaded: ${config.name || "unnamed integration"}`);
@@ -87835,6 +87844,19 @@ async function run() {
     }
     core.setFailed(`Action failed: ${message}`);
   }
+}
+
+/**
+ * Replaces ${{ vars.NAME }} patterns in a string with values from the variables map.
+ */
+function substituteVariables(content, variables) {
+  return content.replace(/\$\{\{\s*vars\.(\w+)\s*\}\}/g, (match, name) => {
+    if (name in variables) {
+      return variables[name];
+    }
+    core.warning(`Variable not found: vars.${name}`);
+    return match;
+  });
 }
 
 /**
