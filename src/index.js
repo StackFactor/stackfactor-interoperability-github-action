@@ -108,14 +108,17 @@ async function run() {
  * Replaces vars.NAME and secrets.NAME patterns in a string with actual values.
  */
 function substituteVariables(content, variables, secrets) {
-  return content.replace(/\$\{\{\s*(vars|secrets)\.(\w+)\s*\}\}/g, (match, scope, name) => {
-    const source = scope === "secrets" ? secrets : variables;
-    if (name in source) {
-      return source[name];
-    }
-    core.warning(`${scope}.${name} not found`);
-    return match;
-  });
+  return content.replace(
+    /\$\{\{\s*(vars|secrets)\.(\w+)\s*\}\}/g,
+    (match, scope, name) => {
+      const source = scope === "secrets" ? secrets : variables;
+      if (name in source) {
+        return source[name];
+      }
+      core.warning(`${scope}.${name} not found`);
+      return match;
+    },
+  );
 }
 
 /**

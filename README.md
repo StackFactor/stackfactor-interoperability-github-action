@@ -23,14 +23,14 @@ Publishes integrations and agents to StackFactor from your repository using the 
 
 ### Inputs
 
-| Input         | Required | Default            | Description                                                                  |
-| ------------- | -------- | ------------------ | ---------------------------------------------------------------------------- |
-| `api-token`   | Yes      |                    | StackFactor API authorization token                                          |
-| `api-url`     | Yes      |                    | StackFactor API base URL                                                     |
-| `config-path` | No       | `src/config.yaml`  | Path to the configuration file relative to repo root                         |
-| `publish`     | No       | `true`             | Whether to publish after updating                                            |
-| `variables`   | No       | `{}`               | JSON object of variables to substitute `vars.NAME` patterns in config.yaml   |
-| `secrets`     | No       | `{}`               | JSON object of secrets to substitute `secrets.NAME` patterns in config.yaml  |
+| Input         | Required | Default           | Description                                                                 |
+| ------------- | -------- | ----------------- | --------------------------------------------------------------------------- |
+| `api-token`   | Yes      |                   | StackFactor API authorization token                                         |
+| `api-url`     | Yes      |                   | StackFactor API base URL                                                    |
+| `config-path` | No       | `src/config.yaml` | Path to the configuration file relative to repo root                        |
+| `publish`     | No       | `true`            | Whether to publish after updating                                           |
+| `variables`   | No       | `{}`              | JSON object of variables to substitute `vars.NAME` patterns in config.yaml  |
+| `secrets`     | No       | `{}`              | JSON object of secrets to substitute `secrets.NAME` patterns in config.yaml |
 
 ### Outputs
 
@@ -148,14 +148,14 @@ constantsAndVars:
 In your workflow, pass all variables and secrets:
 
 ```yaml
-    variables: ${{ toJSON(vars) }}
-    secrets: ${{ toJSON(secrets) }}
+variables: ${{ toJSON(vars) }}
+secrets: ${{ toJSON(secrets) }}
 ```
 
 Or pass specific secrets manually:
 
 ```yaml
-    secrets: '{"EXTERNAL_API_KEY": "${{ secrets.EXTERNAL_API_KEY }}"}'
+secrets: '{"EXTERNAL_API_KEY": "${{ secrets.EXTERNAL_API_KEY }}"}'
 ```
 
 If a referenced variable or secret is not found, the action logs a warning and leaves the placeholder unchanged.
