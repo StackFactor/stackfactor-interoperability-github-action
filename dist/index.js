@@ -87774,7 +87774,9 @@ async function run() {
     try {
       secrets = JSON.parse(secretsJson);
     } catch (e) {
-      throw new Error(`Invalid JSON in 'secrets' input: ${e.message}`);
+      throw new Error(
+        `Invalid JSON in 'secrets' input. Make sure secret values are quoted: '{"KEY": "$\{{ secrets.KEY }}"}'.\nParse error: ${e.message}`,
+      );
     }
 
     // The @stackfactor/client-api creates its axios client at import time,
@@ -87857,14 +87859,17 @@ async function run() {
  * Replaces vars.NAME and secrets.NAME patterns in a string with actual values.
  */
 function substituteVariables(content, variables, secrets) {
-  return content.replace(/\$\{\{\s*(vars|secrets)\.(\w+)\s*\}\}/g, (match, scope, name) => {
-    const source = scope === "secrets" ? secrets : variables;
-    if (name in source) {
-      return source[name];
-    }
-    core.warning(`${scope}.${name} not found`);
-    return match;
-  });
+  return content.replace(
+    /\$\{\{\s*(vars|secrets)\.(\w+)\s*\}\}/g,
+    (match, scope, name) => {
+      const source = scope === "secrets" ? secrets : variables;
+      if (name in source) {
+        return source[name];
+      }
+      core.warning(`${scope}.${name} not found`);
+      return match;
+    },
+  );
 }
 
 /**

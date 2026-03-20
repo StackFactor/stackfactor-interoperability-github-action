@@ -25,7 +25,9 @@ async function run() {
     try {
       secrets = JSON.parse(secretsJson);
     } catch (e) {
-      throw new Error(`Invalid JSON in 'secrets' input: ${e.message}`);
+      throw new Error(
+        `Invalid JSON in 'secrets' input. Make sure secret values are quoted: '{"KEY": "$\{{ secrets.KEY }}"}'.\nParse error: ${e.message}`,
+      );
     }
 
     // The @stackfactor/client-api creates its axios client at import time,
