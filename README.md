@@ -16,17 +16,21 @@ Publishes integrations and agents to StackFactor from your repository using the 
 - uses: StackFactor/stackfactor-interoperability-github-action@main
   with:
     api-token: ${{ secrets.STACKFACTOR_API_TOKEN }}
+    api-url: ${{ vars.STACKFACTOR_API_URL }}
+    variables: ${{ toJSON(vars) }}
+    secrets: ${{ toJSON(secrets) }}
 ```
 
 ### Inputs
 
-| Input         | Required | Default           | Description                                                            |
-| ------------- | -------- | ----------------- | ---------------------------------------------------------------------- |
-| `api-token`   | Yes      |                   | StackFactor API authorization token                                    |
-| `api-url`     | No       |                   | Override the API base URL                                              |
-| `environment` | No       | `production`      | Target environment (`production`, `nonprod`, `testing`, `development`) |
-| `config-path` | No       | `src/config.yaml` | Path to the configuration file relative to repo root                   |
-| `publish`     | No       | `true`            | Whether to publish after updating                                      |
+| Input         | Required | Default            | Description                                                                  |
+| ------------- | -------- | ------------------ | ---------------------------------------------------------------------------- |
+| `api-token`   | Yes      |                    | StackFactor API authorization token                                          |
+| `api-url`     | Yes      |                    | StackFactor API base URL                                                     |
+| `config-path` | No       | `src/config.yaml`  | Path to the configuration file relative to repo root                         |
+| `publish`     | No       | `true`             | Whether to publish after updating                                            |
+| `variables`   | No       | `{}`               | JSON object of variables to substitute `vars.NAME` patterns in config.yaml   |
+| `secrets`     | No       | `{}`               | JSON object of secrets to substitute `secrets.NAME` patterns in config.yaml  |
 
 ### Outputs
 
@@ -122,6 +126,40 @@ customFields:
 | `fieldType`   | Field data type (e.g., `TEXT`)            |
 | `indexable`   | Whether the field is searchable           |
 
+## Variable and Secret Substitution
+
+The config.yaml file can reference GitHub Actions variables and secrets using the `${{ vars.NAME }}` and `${{ secrets.NAME }}` syntax. The action replaces these placeholders at runtime with the values passed via the `variables` and `secrets` inputs.
+
+For example, in `config.yaml`:
+
+```yaml
+constantsAndVars:
+  - name: selectedModel
+    value: "${{ vars.SELECTED_MODEL }}"
+    type: tenantConfig
+    dataType: string
+
+  - name: apiKey
+    value: "${{ secrets.EXTERNAL_API_KEY }}"
+    type: tenantConfigSecret
+    dataType: string
+```
+
+In your workflow, pass all variables and secrets:
+
+```yaml
+    variables: ${{ toJSON(vars) }}
+    secrets: ${{ toJSON(secrets) }}
+```
+
+Or pass specific secrets manually:
+
+```yaml
+    secrets: '{"EXTERNAL_API_KEY": "${{ secrets.EXTERNAL_API_KEY }}"}'
+```
+
+If a referenced variable or secret is not found, the action logs a warning and leaves the placeholder unchanged.
+
 ## Full Workflow Example
 
 ```yaml
@@ -140,7 +178,9 @@ jobs:
       - uses: StackFactor/stackfactor-interoperability-github-action@main
         with:
           api-token: ${{ secrets.STACKFACTOR_API_TOKEN }}
-          environment: production
+          api-url: ${{ vars.STACKFACTOR_API_URL }}
+          variables: ${{ toJSON(vars) }}
+          secrets: ${{ toJSON(secrets) }}
           publish: "true"
 ```
 

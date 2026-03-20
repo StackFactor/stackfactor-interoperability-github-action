@@ -25,6 +25,10 @@ inputs:
     description: "JSON object of variables to substitute in config.yaml (replaces vars.NAME patterns)"
     required: false
     default: "{}"
+  secrets:
+    description: "JSON object of secrets to substitute in config.yaml (replaces secrets.NAME patterns)"
+    required: false
+    default: "{}"
 
 outputs:
   integration-id:

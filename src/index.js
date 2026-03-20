@@ -13,12 +13,19 @@ async function run() {
     const configPath = core.getInput("config-path") || "src/config.yaml";
     const shouldPublish = core.getInput("publish") !== "false";
     const variablesJson = core.getInput("variables") || "{}";
+    const secretsJson = core.getInput("secrets") || "{}";
 
     let variables;
+    let secrets;
     try {
       variables = JSON.parse(variablesJson);
     } catch (e) {
       throw new Error(`Invalid JSON in 'variables' input: ${e.message}`);
+    }
+    try {
+      secrets = JSON.parse(secretsJson);
+    } catch (e) {
+      throw new Error(`Invalid JSON in 'secrets' input: ${e.message}`);
     }
 
     // The @stackfactor/client-api creates its axios client at import time,
@@ -32,7 +39,7 @@ async function run() {
     core.info(`Reading configuration from ${fullConfigPath}`);
 
     const rawContent = await readFile(fullConfigPath, "utf-8");
-    const configContent = substituteVariables(rawContent, variables);
+    const configContent = substituteVariables(rawContent, variables, secrets);
     const config = yaml.load(configContent);
 
     core.info(`Configuration loaded: ${config.name || "unnamed integration"}`);
@@ -98,14 +105,15 @@ async function run() {
 }
 
 /**
- * Replaces ${{ vars.NAME }} patterns in a string with values from the variables map.
+ * Replaces vars.NAME and secrets.NAME patterns in a string with actual values.
  */
-function substituteVariables(content, variables) {
-  return content.replace(/\$\{\{\s*vars\.(\w+)\s*\}\}/g, (match, name) => {
-    if (name in variables) {
-      return variables[name];
+function substituteVariables(content, variables, secrets) {
+  return content.replace(/\$\{\{\s*(vars|secrets)\.(\w+)\s*\}\}/g, (match, scope, name) => {
+    const source = scope === "secrets" ? secrets : variables;
+    if (name in source) {
+      return source[name];
     }
-    core.warning(`Variable not found: vars.${name}`);
+    core.warning(`${scope}.${name} not found`);
     return match;
   });
 }
