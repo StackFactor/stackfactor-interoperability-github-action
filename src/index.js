@@ -128,7 +128,7 @@ async function buildPayload(config, workspace, configDir) {
 
   // Map constants and variables
   if (config.constantsAndVars) {
-    payload.constantsAndVars = config.constantsAndVars.map((entry) => {
+    payload.constAndVars = config.constantsAndVars.map((entry) => {
       const mapped = {
         name: entry.name,
         description: entry.description,
