@@ -87758,18 +87758,14 @@ async function run() {
   try {
     // Read inputs
     const apiToken = core.getInput("api-token", { required: true });
-    const apiUrl = core.getInput("api-url");
-    const environment = core.getInput("environment") || "production";
+    const apiUrl = core.getInput("api-url", { required: true });
     const configPath = core.getInput("config-path") || "src/config.yaml";
     const shouldPublish = core.getInput("publish") !== "false";
 
-    // Configure the API base URL via environment variables
-    // The @stackfactor/client-api reads REACT_APP_BACKEND_URL or REACT_APP_NODE_ENV
-    if (apiUrl) {
-      process.env.REACT_APP_BACKEND_URL = apiUrl;
-    } else {
-      process.env.REACT_APP_NODE_ENV = environment;
-    }
+    // The @stackfactor/client-api creates its axios client at import time,
+    // so we must update client.defaults.baseURL directly at runtime.
+    axiosClient_client.defaults.baseURL = apiUrl;
+    core.info(`API target: ${apiUrl}`);
 
     // Read the configuration file from the repository
     const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
@@ -87819,13 +87815,25 @@ async function run() {
 
     core.info(`Done. Status: ${status}`);
   } catch (error) {
+    const message = error.message || String(error);
     if (error.response) {
       core.error(`API response status: ${error.response.status}`);
-      core.error(`API response data: ${JSON.stringify(error.response.data, null, 2)}`);
+      core.error(
+        `API response data: ${JSON.stringify(error.response.data, null, 2)}`,
+      );
     } else if (error.request) {
-      core.error(`No response received from API: ${error.message}`);
+      core.error(
+        `No response received from API. This usually means the request could not reach the server.`,
+      );
+      core.error(
+        `Request URL: ${error.config?.baseURL || "unknown"}${error.config?.url || ""}`,
+      );
+      core.error(`Error code: ${error.code || "unknown"}`);
     }
-    core.setFailed(`Action failed: ${error.message}`);
+    if (error.cause) {
+      core.error(`Cause: ${error.cause.message || String(error.cause)}`);
+    }
+    core.setFailed(`Action failed: ${message}`);
   }
 }
 

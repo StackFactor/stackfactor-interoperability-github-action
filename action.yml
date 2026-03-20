@@ -11,12 +11,8 @@ inputs:
     description: "StackFactor API authorization token"
     required: true
   api-url:
-    description: "StackFactor API base URL (overrides environment)"
-    required: false
-  environment:
-    description: "Target environment: production, nonprod, testing, development"
-    required: false
-    default: "production"
+    description: "StackFactor API base URL"
+    required: true
   config-path:
     description: "Path to the StackFactor configuration file (YAML) relative to repository root"
     required: false
