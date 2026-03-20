@@ -22,7 +22,7 @@ inputs:
     required: false
     default: "true"
   variables:
-    description: "JSON object of variables to substitute in config.yaml (replaces ${{ vars.NAME }} patterns)"
+    description: "JSON object of variables to substitute in config.yaml (replaces vars.NAME patterns)"
     required: false
     default: "{}"
 
