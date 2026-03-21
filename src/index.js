@@ -60,15 +60,35 @@ async function run() {
     // Build the payload from the configuration file
     const payload = await buildPayload(config, workspace, configDir);
 
-    // Update the integration
-    core.info(`Updating integration ${integrationId}...`);
-    await integration.setIntegrationInformation(
-      integrationId,
-      payload,
-      apiToken,
-    );
-    core.info(`Integration ${integrationId} updated successfully.`);
-    let status = "updated";
+    let status;
+    let integrationExists = false;
+    try {
+      // Try to get the integration (draft version)
+      await integration.getIntegrationInformationById(
+        integrationId,
+        "draft",
+        apiToken,
+      );
+      integrationExists = true;
+      core.info(`Integration ${integrationId} exists. Updating...`);
+      await integration.setIntegrationInformation(
+        integrationId,
+        payload,
+        apiToken,
+      );
+      core.info(`Integration ${integrationId} updated successfully.`);
+      status = "updated";
+    } catch (err) {
+      // If not found, create it
+      if (err?.response?.status === 404) {
+        core.info(`Integration ${integrationId} does not exist. Creating...`);
+        await integration.createIntegration(payload, apiToken);
+        core.info(`Integration ${integrationId} created successfully.`);
+        status = "created";
+      } else {
+        throw err;
+      }
+    }
 
     // Publish if requested
     if (shouldPublish) {
