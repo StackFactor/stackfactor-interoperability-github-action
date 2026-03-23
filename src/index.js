@@ -82,8 +82,17 @@ async function run() {
       core.info(`Interoperability ${integrationId} updated successfully.`);
       status = "updated";
     } catch (err) {
-      // If not found, create it
-      if (err?.response?.status === 404) {
+      // If not found, create it (robust 404 detection)
+      const status404 =
+        (err && err.response && err.response.status === 404) ||
+        (err && err.status === 404) ||
+        (err && err.message && /404|not found/i.test(err.message)) ||
+        (err &&
+          err.response &&
+          err.response.data &&
+          typeof err.response.data.error === "string" &&
+          /not found|404/i.test(err.response.data.error));
+      if (status404) {
         core.info(
           `Interoperability ${integrationId} does not exist. Creating...`,
         );
