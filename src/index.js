@@ -64,10 +64,13 @@ async function run() {
     let integrationExists = false;
     try {
       // Try to get the integration (draft version)
-      await integration.getIntegrationInformationById(
+      const existing = await integration.getIntegrationInformationById(
         integrationId,
         "draft",
         apiToken,
+      );
+      core.info(
+        `getIntegrationInformationById response: ${JSON.stringify(existing?.data ?? existing, null, 2)}`,
       );
       integrationExists = true;
       core.info(`Interoperability ${integrationId} exists. Updating...`);
