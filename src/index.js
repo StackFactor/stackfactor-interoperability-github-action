@@ -70,20 +70,22 @@ async function run() {
         apiToken,
       );
       integrationExists = true;
-      core.info(`Integration ${integrationId} exists. Updating...`);
+      core.info(`Interoperability ${integrationId} exists. Updating...`);
       await integration.setIntegrationInformation(
         integrationId,
         payload,
         apiToken,
       );
-      core.info(`Integration ${integrationId} updated successfully.`);
+      core.info(`Interoperability ${integrationId} updated successfully.`);
       status = "updated";
     } catch (err) {
       // If not found, create it
       if (err?.response?.status === 404) {
-        core.info(`Integration ${integrationId} does not exist. Creating...`);
+        core.info(
+          `Interoperability ${integrationId} does not exist. Creating...`,
+        );
         await integration.createIntegration(payload, apiToken);
-        core.info(`Integration ${integrationId} created successfully.`);
+        core.info(`Interoperability ${integrationId} created successfully.`);
         status = "created";
       } else {
         throw err;
@@ -92,10 +94,10 @@ async function run() {
 
     // Publish if requested
     if (shouldPublish) {
-      core.info(`Publishing integration ${integrationId}...`);
+      core.info(`Publishing interoperability ${integrationId}...`);
       await integration.publishIntegration(integrationId, apiToken);
       status = "published";
-      core.info(`Integration ${integrationId} published successfully.`);
+      core.info(`Interoperability ${integrationId} published successfully.`);
     }
 
     // Set outputs
@@ -160,6 +162,7 @@ async function readCodeFile(filePath, workspace, configDir) {
  */
 async function buildPayload(config, workspace, configDir) {
   const payload = {
+    _id: config._id,
     name: config.name,
     summary: config.summary,
     type: config.type,
