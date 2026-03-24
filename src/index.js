@@ -180,6 +180,7 @@ async function buildPayload(config, workspace, configDir) {
     type: config.type,
     url: config.url,
     canBeDisabled: config.canBeDisabled,
+    publishedInMarketplace: config.publishedInMarketplace,
   };
 
   // Read and inline the code file
