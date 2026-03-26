@@ -244,7 +244,9 @@ async function buildPayload(config, workspace, configDir) {
         const code = await readFile(absPath, "utf-8");
         payload.repository.push({ path: repoPath, code });
       } catch (err) {
-        core.warning(`Could not read repository file: ${repoPath} - ${err.message}`);
+        core.warning(
+          `Could not read repository file: ${repoPath} - ${err.message}`,
+        );
       }
     }
   }
