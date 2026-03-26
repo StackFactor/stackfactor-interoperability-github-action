@@ -234,6 +234,21 @@ async function buildPayload(config, workspace, configDir) {
     ref: context.ref,
   };
 
+  // Add repository files (array of { path, code })
+  if (Array.isArray(config.repository)) {
+    payload.repository = [];
+    for (const repoPath of config.repository) {
+      try {
+        // Resolve the file path relative to configDir
+        const absPath = resolve(configDir, repoPath);
+        const code = await readFile(absPath, "utf-8");
+        payload.repository.push({ path: repoPath, code });
+      } catch (err) {
+        core.warning(`Could not read repository file: ${repoPath} - ${err.message}`);
+      }
+    }
+  }
+
   return payload;
 }
 
