@@ -87809,6 +87809,13 @@ async function run() {
     // Build the payload from the configuration file
     const payload = await buildPayload(config, workspace, configDir);
 
+    if (payload.code) {
+      core.info(`code: ${payload.code.length} bytes from ${config.code}`);
+    }
+    if (payload.batchCode) {
+      core.info(`batchCode: ${payload.batchCode.length} bytes from ${config.batchCode}`);
+    }
+
     let status;
     let integrationExists = false;
     try {
