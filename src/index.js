@@ -69,9 +69,6 @@ async function run() {
         "draft",
         apiToken,
       );
-      core.info(
-        `getIntegrationInformationById response: ${JSON.stringify(existing?.data ?? existing, null, 2)}`,
-      );
       integrationExists = true;
       core.info(`Interoperability ${integrationId} exists. Updating...`);
       await integration.setIntegrationInformation(
