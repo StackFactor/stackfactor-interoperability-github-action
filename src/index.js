@@ -58,13 +58,13 @@ async function run() {
     const configDir = dirname(fullConfigPath);
 
     // Build the payload from the configuration file
-    const payload = await buildPayload(config, workspace, configDir);
+    const payload = await buildPayload(config, configDir);
 
     if (payload.code) {
-      core.info(`code: ${payload.code.length} bytes from ${config.code}`);
+      core.info(`code: ${payload.code}`);
     }
     if (payload.batchCode) {
-      core.info(`batchCode: ${payload.batchCode.length} bytes from ${config.batchCode}`);
+      core.info(`batchCode: ${payload.batchCode}`);
     }
 
     let status;
@@ -162,21 +162,9 @@ function substituteVariables(content, variables, secrets) {
 }
 
 /**
- * Reads a file path relative to configDir, with path-traversal protection.
- */
-async function readCodeFile(filePath, workspace, configDir) {
-  const resolved = resolve(configDir, filePath);
-  if (!resolved.startsWith(workspace)) {
-    throw new Error(`File path escapes workspace: ${filePath}`);
-  }
-  core.info(`Reading code file: ${filePath}`);
-  return readFile(resolved, "utf-8");
-}
-
-/**
  * Builds the integration payload from the parsed YAML config.
  */
-async function buildPayload(config, workspace, configDir) {
+async function buildPayload(config, configDir) {
   const payload = {
     _id: config._id,
     name: config.name,
@@ -187,18 +175,12 @@ async function buildPayload(config, workspace, configDir) {
     publishedInMarketplace: config.publishedInMarketplace,
   };
 
-  // Read and inline the code file
   if (config.code) {
-    payload.code = await readCodeFile(config.code, workspace, configDir);
+    payload.code = config.code;
   }
 
-  // Read and inline the batch code file
   if (config.batchCode) {
-    payload.batchCode = await readCodeFile(
-      config.batchCode,
-      workspace,
-      configDir,
-    );
+    payload.batchCode = config.batchCode;
   }
 
   // Map constants and variables
