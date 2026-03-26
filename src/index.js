@@ -10,7 +10,7 @@ async function run() {
     // Read inputs
     const apiToken = core.getInput("api-token", { required: true });
     const apiUrl = core.getInput("api-url", { required: true });
-    const configPath = core.getInput("config-path") || "src/config.yaml";
+    const configPath = core.getInput("config-path") || "config.yaml";
     const shouldPublish = core.getInput("publish") !== "false";
     const variablesJson = core.getInput("variables") || "{}";
     const secretsJson = core.getInput("secrets") || "{}";
