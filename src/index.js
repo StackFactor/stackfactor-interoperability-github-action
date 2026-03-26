@@ -173,6 +173,8 @@ async function buildPayload(config, configDir) {
     url: config.url,
     canBeDisabled: config.canBeDisabled,
     publishedInMarketplace: config.publishedInMarketplace,
+    tags: config.tags || [],
+    githubRepository: `${github.context.repo.owner}/${github.context.repo.repo}`,
   };
 
   if (config.code) {
