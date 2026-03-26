@@ -87759,7 +87759,7 @@ async function run() {
     // Read inputs
     const apiToken = core.getInput("api-token", { required: true });
     const apiUrl = core.getInput("api-url", { required: true });
-    const configPath = core.getInput("config-path") || "src/config.yaml";
+    const configPath = core.getInput("config-path") || "config.yaml";
     const shouldPublish = core.getInput("publish") !== "false";
     const variablesJson = core.getInput("variables") || "{}";
     const secretsJson = core.getInput("secrets") || "{}";
@@ -87809,22 +87809,56 @@ async function run() {
     // Build the payload from the configuration file
     const payload = await buildPayload(config, workspace, configDir);
 
-    // Update the integration
-    core.info(`Updating integration ${integrationId}...`);
-    await setIntegrationInformation(
-      integrationId,
-      payload,
-      apiToken,
-    );
-    core.info(`Integration ${integrationId} updated successfully.`);
-    let status = "updated";
+    let status;
+    let integrationExists = false;
+    try {
+      // Try to get the integration (draft version)
+      const existing = await getIntegrationInformationById(
+        integrationId,
+        "draft",
+        apiToken,
+      );
+      core.info(
+        `getIntegrationInformationById response: ${JSON.stringify(existing?.data ?? existing, null, 2)}`,
+      );
+      integrationExists = true;
+      core.info(`Interoperability ${integrationId} exists. Updating...`);
+      await setIntegrationInformation(
+        integrationId,
+        payload,
+        apiToken,
+      );
+      core.info(`Interoperability ${integrationId} updated successfully.`);
+      status = "updated";
+    } catch (err) {
+      // If not found, create it (robust 404 detection)
+      const status404 =
+        (err && err.response && err.response.status === 404) ||
+        (err && err.status === 404) ||
+        (err && err.message && /404|not found/i.test(err.message)) ||
+        (err &&
+          err.response &&
+          err.response.data &&
+          typeof err.response.data.error === "string" &&
+          /not found|404/i.test(err.response.data.error));
+      if (status404) {
+        core.info(
+          `Interoperability ${integrationId} does not exist. Creating...`,
+        );
+        await createIntegration(payload, apiToken);
+        core.info(`Interoperability ${integrationId} created successfully.`);
+        status = "created";
+      } else {
+        throw err;
+      }
+    }
 
     // Publish if requested
     if (shouldPublish) {
-      core.info(`Publishing integration ${integrationId}...`);
+      core.info(`Publishing interoperability ${integrationId}...`);
       await publishIntegration(integrationId, apiToken);
       status = "published";
-      core.info(`Integration ${integrationId} published successfully.`);
+      core.info(`Interoperability ${integrationId} published successfully.`);
     }
 
     // Set outputs
@@ -87889,11 +87923,13 @@ async function readCodeFile(filePath, workspace, configDir) {
  */
 async function buildPayload(config, workspace, configDir) {
   const payload = {
+    _id: config._id,
     name: config.name,
     summary: config.summary,
     type: config.type,
     url: config.url,
     canBeDisabled: config.canBeDisabled,
+    publishedInMarketplace: config.publishedInMarketplace,
   };
 
   // Read and inline the code file
@@ -87946,6 +87982,26 @@ async function buildPayload(config, workspace, configDir) {
     commit: context.sha,
     ref: context.ref,
   };
+
+  // Add repository files (array of { path, code })
+  if (Array.isArray(config.repository)) {
+    payload.repository = [];
+    for (const repoPath of config.repository) {
+      try {
+        // Resolve the file path relative to configDir
+        const absPath = (0,external_node_path_namespaceObject.resolve)(configDir, repoPath);
+        const code = await (0,promises_namespaceObject.readFile)(absPath, "utf-8");
+        payload.repository.push({ path: repoPath, code });
+        core.info(
+          `Included file in payload: ${repoPath} (${code.length} bytes)`,
+        );
+      } catch (err) {
+        core.warning(
+          `Could not read repository file: ${repoPath} - ${err.message}`,
+        );
+      }
+    }
+  }
 
   return payload;
 }
