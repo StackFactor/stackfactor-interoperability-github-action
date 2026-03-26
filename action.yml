@@ -16,7 +16,7 @@ inputs:
   config-path:
     description: "Path to the StackFactor configuration file (YAML) relative to repository root"
     required: false
-    default: "src/config.yaml"
+    default: "config.yaml"
   publish:
     description: "Whether to publish the integration after updating (true/false)"
     required: false
