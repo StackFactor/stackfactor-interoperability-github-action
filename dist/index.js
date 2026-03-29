@@ -87899,13 +87899,13 @@ async function run() {
 function substituteVariables(content, variables, secrets) {
   return content.replace(
     /\$\{\{\s*(vars|secrets)\.(\w+)\s*\}\}/g,
-    (match, scope, name) => {
+    (_match, scope, name) => {
       const source = scope === "secrets" ? secrets : variables;
       if (name in source) {
         return source[name];
       }
-      core.warning(`${scope}.${name} not found`);
-      return match;
+      core.warning(`${scope}.${name} not found, defaulting to empty string`);
+      return "";
     },
   );
 }
