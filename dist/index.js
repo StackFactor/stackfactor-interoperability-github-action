@@ -87803,6 +87803,12 @@ async function run() {
       );
     }
 
+    if (!config.capabilities) {
+      throw new Error(
+        "capabilities is required in config.yaml.",
+      );
+    }
+
     // The config dir is used to resolve relative file paths (code, batchCode)
     const configDir = (0,external_node_path_namespaceObject.dirname)(fullConfigPath);
 
@@ -87932,6 +87938,10 @@ async function buildPayload(config, configDir) {
 
   if (config.batchCode) {
     payload.batchCode = config.batchCode;
+  }
+
+  if (config.capabilities) {
+    payload.capabilities = config.capabilities;
   }
 
   // Map constants and variables

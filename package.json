@@ -1,6 +1,6 @@
 {
   "name": "stackfactor-interoperability-github-action",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "GitHub Action that publishes integrations and agents to StackFactor",
   "main": "dist/index.js",
   "type": "module",
@@ -17,7 +17,7 @@
     "@actions/core": "^1.10.1",
     "@actions/github": "^6.0.0",
     "@actions/glob": "^0.4.0",
-    "@stackfactor/client-api": "^1.1.195",
+    "@stackfactor/client-api": "^1.1.219",
     "js-yaml": "^4.1.1"
   },
   "devDependencies": {
