@@ -54,9 +54,10 @@ async function run() {
       );
     }
 
-    if (!config.capabilities) {
+    // capabilities is mandatory for type 5 integrations
+    if (Number(config.type) === 5 && !config.capabilities) {
       throw new Error(
-        "capabilities is required in config.yaml.",
+        "capabilities is required in config.yaml when type is 5.",
       );
     }
 
