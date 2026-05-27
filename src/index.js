@@ -162,8 +162,9 @@ function substituteVariables(content, variables, secrets) {
       if (name in source) {
         return source[name];
       }
-      core.warning(`${scope}.${name} not found, defaulting to empty string`);
-      return "";
+      throw new Error(
+        `${scope}.${name} referenced in config.yaml but not provided in the '${scope}' input.`,
+      );
     },
   );
 }
@@ -194,6 +195,24 @@ async function buildPayload(config, configDir) {
 
   if (config.capabilities) {
     payload.capabilities = config.capabilities;
+  }
+
+  if (config.apps !== undefined) {
+    if (!Array.isArray(config.apps)) {
+      throw new Error("apps must be an array of strings in config.yaml.");
+    }
+    const validApps = ["core", "admin", "exceed", "shield"];
+    const invalid = config.apps.filter(
+      (app) => typeof app !== "string" || !validApps.includes(app),
+    );
+    if (invalid.length > 0) {
+      throw new Error(
+        `apps contains invalid value(s): ${invalid
+          .map((v) => JSON.stringify(v))
+          .join(", ")}. Valid values are: ${validApps.join(", ")}.`,
+      );
+    }
+    payload.apps = config.apps;
   }
 
   // Map constants and variables
@@ -237,19 +256,19 @@ async function buildPayload(config, configDir) {
   if (Array.isArray(config.repository)) {
     payload.repository = [];
     for (const repoPath of config.repository) {
+      const absPath = resolve(configDir, repoPath);
+      let code;
       try {
-        // Resolve the file path relative to configDir
-        const absPath = resolve(configDir, repoPath);
-        const code = await readFile(absPath, "utf-8");
-        payload.repository.push({ path: repoPath, code });
-        core.info(
-          `Included file in payload: ${repoPath} (${code.length} bytes)`,
-        );
+        code = await readFile(absPath, "utf-8");
       } catch (err) {
-        core.warning(
+        throw new Error(
           `Could not read repository file: ${repoPath} - ${err.message}`,
         );
       }
+      payload.repository.push({ path: repoPath, code });
+      core.info(
+        `Included file in payload: ${repoPath} (${code.length} bytes)`,
+      );
     }
   }
 
