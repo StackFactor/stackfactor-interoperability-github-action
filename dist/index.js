@@ -77774,7 +77774,7 @@ axios.default = axios;
 // this module should only have a default export
 /* harmony default export */ const lib_axios = (axios);
 
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/constants.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/constants.js
 const DOCUMENT_VERSION = {
     DRAFT: "draft",
     PUBLISHED: "published",
@@ -77815,13 +77815,25 @@ const constants_RESPONSE_TYPE = {
     HTTP_VERSION_NOT_SUPPORTED: 505,
     INITIALIZATION_FAILURE: 550,
 };
+/**
+ * Application licensing tiers. Mirrors the canonical APPS registry in
+ * `@stackfactor/backend-core` (`lib/actions/applications.ts`). A tenant's
+ * `applications` array — and each user's effective entitlement via group
+ * membership — is expressed in terms of these identifiers. CORE is
+ * implicitly granted to every tenant; the other apps are optional.
+ */
+const APPS = {
+    CORE: "core",
+    EXCEED: "exceed",
+    ADMIN: "admin",
+    SHIELD: "shield",
+};
 const PERMISSIONS = {
     ACCESS_TO_CONTENT_GENERATORS: "651d81d626fb9aafa4077520",
     ADMIN_AUTHOR_CONTENT: "5ea3d1152839450e16e72bba",
     ADMIN_PROMOTE_CONTENT: "5ea3d10bea252025c8ec351b",
     ADMIN_MANAGE_CONTENT_PROVIDERS: "61970935cee185acf08111f6",
     AUTHOR_CONTENT: "5fac210560e43de7c6b4a208",
-    BETA_TESTER: "5fac210b6c8f874bd7137b97",
     MANAGE_BILLING: "5e1570cd03f676213bfdcd08",
     MANAGE_CONTENT_PROVIDERS: "5f0fa12f16a720fde58ea820",
     MANAGE_EXECUTIVE: "5fac2111b7e49e10c779b4a5",
@@ -77866,7 +77878,7 @@ const PERMISSION_DESCRIPTIONS = {
 //# sourceMappingURL=constants.js.map
 // EXTERNAL MODULE: ./node_modules/dotenv/lib/main.js
 var main = __nccwpck_require__(8889);
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/utils.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/utils.js
 
 // Load environment variables from .env file
 main.config();
@@ -77878,11 +77890,12 @@ const utils_getBaseUrl = () => {
     if (process.env.REACT_APP_BACKEND_URL) {
         return process.env.REACT_APP_BACKEND_URL;
     }
+    else if (process.env.BACKEND_URL) {
+        return process.env.BACKEND_URL;
+    }
     else {
         switch (process.env.REACT_APP_NODE_ENV) {
             case "development":
-            case null:
-            case undefined:
                 return "https://localhost";
             case "testing":
                 return "https://qaapi.stackfactor.ai";
@@ -77893,7 +77906,7 @@ const utils_getBaseUrl = () => {
             case "security":
                 return "https://csapi.stackfactor.ai";
             default:
-                throw new Error("Invalid environment");
+                return "https://localhost";
         }
     }
 };
@@ -77917,7 +77930,7 @@ const removeNullProperties = (object) => {
     return object;
 };
 //# sourceMappingURL=utils.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/axiosClient.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/axiosClient.js
 
 
 
@@ -78006,7 +78019,7 @@ const shouldReturnError = (returnAllExceptions, error) => {
     }
 };
 //# sourceMappingURL=axiosClient.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/actionNotifications.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/actionNotifications.js
 
 /**
  * Get all permissions
@@ -78074,7 +78087,7 @@ const processNotification = (id, action, comments, authToken) => {
     });
 };
 //# sourceMappingURL=actionNotifications.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/aiAssistant.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/aiAssistant.js
 
 /**
  * Ask Question to the AI
@@ -78091,7 +78104,7 @@ const askQuestion = (conversationId, question, updatedContext, token) => {
             question: question,
             updatedContext: updatedContext,
         };
-        const confirmationRequest = client.post("/api/v1/aiassistant/askquestion", data, {
+        const confirmationRequest = client.post("/api/v1/exceed/aiassistant/askquestion", data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -78114,7 +78127,7 @@ const endConversation = (conversationId, token) => {
         const data = {
             conversationId: conversationId,
         };
-        const confirmationRequest = client.post("/api/v1/aiassistant/endconversation", data, {
+        const confirmationRequest = client.post("/api/v1/exceed/aiassistant/endconversation", data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -78134,7 +78147,7 @@ const endConversation = (conversationId, token) => {
  */
 const getConversationByElementId = (elementId, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/aiassistant/getconversation/${elementId}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/aiassistant/getconversation/${elementId}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -78154,7 +78167,7 @@ const getConversationByElementId = (elementId, token) => {
  */
 const getVoiceAssistantUrl = (language, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/aiassistant/getvoiceassistanturl/${language}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/aiassistant/getvoiceassistanturl/${language}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -78188,7 +78201,7 @@ const startConversation = (elementId, elementType, question, context, autoContex
         if (conversationId) {
             data.conversationId = conversationId;
         }
-        const confirmationRequest = client.post("/api/v1/aiassistant/startconversation", data, {
+        const confirmationRequest = client.post("/api/v1/exceed/aiassistant/startconversation", data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -78201,7 +78214,110 @@ const startConversation = (elementId, elementType, question, context, autoContex
     });
 };
 //# sourceMappingURL=aiAssistant.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/avatar.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/artifactCatalog.js
+
+/**
+ * Create artifact catalog entry
+ * @param {Object} data The artifact catalog data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createArtifactCatalog = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.put(`/api/v1/shield/artifactcatalog`, data, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get all artifact catalog entries
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getArtifactCatalogs = (token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/shield/artifactcatalog`, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get artifact catalog entry by id
+ * @param {String} id The artifact catalog id
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getArtifactCatalogById = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/shield/artifactcatalog/${id}`, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Update artifact catalog entry
+ * @param {Object} data The artifact catalog data to update
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const updateArtifactCatalog = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.post(`/api/v1/shield/artifactcatalog/update`, data, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete artifact catalog entry
+ * @param {String} id The id of the artifact catalog entry to delete
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const deleteArtifactCatalog = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.delete(`/api/v1/shield/artifactcatalog`, {
+            headers: { authorization: token },
+            data: { id: id },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=artifactCatalog.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/avatar.js
 
 /**
  * Get avatar for an elementId
@@ -78231,7 +78347,7 @@ const getAvatar = (elementId, type, width, height, token, title = "") => {
     });
 };
 //# sourceMappingURL=avatar.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/address.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/address.js
 
 /**
  * Validate Address
@@ -78252,7 +78368,7 @@ const autoComplete = (input, authToken) => {
     });
 };
 //# sourceMappingURL=address.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/config.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/config.js
 
 /**
  * Get the specified configuration by Id. It returns a promise
@@ -82578,7 +82694,7 @@ Object.assign(lookup, {
 
 
 
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/integrations/contentGenerator.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/integrations/contentGenerator.js
 
 
 
@@ -82606,7 +82722,7 @@ const generateContent = (data, contentType, integrationId, token, onProgressStat
             auth: {
                 token: token,
             },
-            path: `/api/v1/contentgenerators`,
+            path: `/api/v1/realtime`,
             transports: ["websocket"],
             withCredentials: true,
             reconnection: false,
@@ -82637,27 +82753,24 @@ const generateContent = (data, contentType, integrationId, token, onProgressStat
 };
 /**
  * Generate content async
- * @param {String} id
- * @param {Object} data
- * @param {String} contentType
- * @param {String} elementType
- * @param {String} integrationId
- * @param {String} comments
- * @param {String} token
+ * @param {String} id The id of the element for which the content is being generated
+ * @param {String} elementType The type of the element for which the content is being generated (e.g. "skill", "skill template", etc.)
+ * @param {Object} data The data to use for content generation
+ * @param {String} contentType The type of content to generate (e.g. "text", "image", etc.)
+ * @param {String} comments Any comments to include with the content generation request
+ * @param {String} token The authentication token
  * @returns {Promise<object>}
  */
-const generateContentAsync = (id, data, contentType, elementType, integrationId, comments, token) => {
+const generateContentAsync = (id, elementType, data, contentType, comments, token) => {
     return new Promise((resolve, reject) => {
         const data_ = {
-            id: id,
             data: data,
+            id: id,
             comments: comments,
             contentType: contentType,
             elementType: elementType,
         };
-        if (integrationId)
-            data_.integrationId = integrationId;
-        const request = client.post(`/api/v1/contentgeneratorsasync/generate`, data_, {
+        const request = client.post(`/api/v1/exceed/contentgeneratorsasync/generate`, data_, {
             headers: { authorization: token },
         });
         request
@@ -82670,7 +82783,740 @@ const generateContentAsync = (id, data, contentType, elementType, integrationId,
     });
 };
 //# sourceMappingURL=contentGenerator.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/customFields.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/control.js
+
+/**
+ * Create control and set information
+ * @param {Object} data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createControl = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.put("/api/v1/shield/controls", { data: data }, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Create controls from templates
+ * @param {Array<String>} templateIds
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createControlsFromTemplates = (templateIds, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            templateIds: templateIds,
+        };
+        const confirmationRequest = client.put("/api/v1/shield/controls/createfromtemplate/", requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete control
+ * @param {String} id The id of the control to be deleted
+ * @param {String} comments The comments included with the deletion
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const deleteControl = (id, comments, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {
+            id: id,
+        };
+        if (comments)
+            data.comments = comments;
+        const request = client.delete(`/api/v1/shield/controls/`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Discard the control draft changes
+ * @param {String} id The id of the control to be discarded
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const discardControlChanges = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        const request = client.get(`/api/v1/shield/controls/discard/${id}`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get control information
+ * @param {String} id The id of the control
+ * @param {String} version The version of the control
+ * @param {Boolean} returnNullIfVersionNotFound When true it will return null if the version is not found
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getControlInformationById = (id, version, returnNullIfVersionNotFound, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.get(`/api/v1/shield/controls/${id}/${version}/${returnNullIfVersionNotFound}`, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get control list
+ * @param {Array<String>} filter The filter used to select the control
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted If true it will return deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getControlList = (filter, version, includeDeleted, returnDefaultIfVersionNotAvailable, details, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            includeDeleted: includeDeleted,
+            details: details,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+            version: version,
+            filter: filter,
+        };
+        if (filter)
+            requestData.filter = filter;
+        const confirmationRequest = client.post(`/api/v1/shield/controls`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Publish control
+ * @param {String} id The id of the control to be published
+ * @param {String} comments The comments to be include with the request
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const publishControl = (id, comments, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        if (comments)
+            data.comments = comments;
+        const confirmationRequest = client.post(`/api/v1/shield/controls/publish/${id}`, data, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Set control information
+ * @param {String} id The id of the control to be updated
+ * @param {Object} data Data used to update the control
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setControlInformation = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/controls/update`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Set the control information from template
+ * @param {String} id The id of the control to be updated
+ * @param {Object} data Data used to update the control
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setControlInformationFromTemplate = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/controls/updatefromtemplate/`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Watch control
+ * @param {String} id The id of the control to be updated
+ * @param {Boolean} watch Set to true or false
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const watchControl = (id, watch, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            id: id,
+            watch: watch,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/controls/watch`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the control related requirements
+ * @param {String} id The control id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getControlRelatedRequirements = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/controls/requirements/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the control related standards
+ * @param {String} id The control id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getControlRelatedStandards = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/controls/standards/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the control related policies
+ * @param {String} id The control id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getControlRelatedPolicies = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/controls/policies/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=control.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/controlResults.js
+
+/**
+ * Create control result
+ * @param {Object} data The control result data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createControlResult = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.put(`/api/v1/shield/controlresults`, data, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get all control results
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getControlResults = (token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/shield/controlresults`, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get control result by id
+ * @param {String} id The control result id
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getControlResultById = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/shield/controlresults/${id}`, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Update control result
+ * @param {Object} data The control result data to update
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const updateControlResult = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.post(`/api/v1/shield/controlresults/update`, data, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete control result
+ * @param {String} id The id of the control result to delete
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const deleteControlResult = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.delete(`/api/v1/shield/controlresults`, {
+            headers: { authorization: token },
+            data: { id: id },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=controlResults.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/controlTemplate.js
+
+/**
+ * Create control template and set information
+ * @param {Object} data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createControlTemplate = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+        };
+        const confirmationRequest = client.put("/api/v1/admin/controltemplates", requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete control template
+ * @param {number} id The id of the template to be deleted
+ * @param {String} comments The comments included with the deletion
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const deleteControlTemplate = (id, comments, token) => {
+    const data = {
+        id: id,
+    };
+    if (comments)
+        data.comments = comments;
+    return new Promise((resolve, reject) => {
+        const request = client.delete(`/api/v1/admin/controltemplates/`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Discard the control template draft changes
+ * @param {String} id The id of the control template to be discarded
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const discardControlTemplateChanges = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        const request = client.get(`/api/v1/admin/controltemplates/discard/${id}`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get control template information
+ * @param {String} id The id of the template
+ * @param {String} version The version of the template
+ * @param {Boolean} returnNullIfVersionNotFound When true it will return null if the version is not found
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getControlTemplateInformationById = (id, version, returnNullIfVersionNotFound, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.get(`/api/v1/admin/controltemplates/${id}/${version}/${returnNullIfVersionNotFound}`, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get control template list
+ * @param {Array<String>} filter The filter used to select the template
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getControlTemplateList = (filter, version, includeDeleted, details, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            includeDeleted: includeDeleted,
+            details: details,
+            version: version,
+        };
+        if (filter)
+            requestData.filter = filter;
+        const confirmationRequest = client.post(`/api/v1/admin/controltemplates`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Publish control template
+ * @param {number} id The id of the template to be published
+ * @param {String} comments The comments to be include with the request
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const publishControlTemplate = (id, comments, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        if (comments)
+            data.comments = comments;
+        const confirmationRequest = client.post(`/api/v1/admin/controltemplates/publish/${id}`, data, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Set control template information
+ * @param {String} id The id of the template to be updated
+ * @param {Object} data Data used to update the template
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setControlTemplateInformation = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/controltemplates/update`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Update the control template tags
+ * @param {String} id The id of the template to be updated
+ * @param {Object} tags Updated template tags
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setControlTemplateTags = (id, tags, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            tags: tags,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/controltemplates/updatetags`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the control template related policy templates
+ * @param {String} id The control template id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getControlTemplateRelatedPolicyTemplates = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/controltemplates/policytemplates/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the control template related standard templates
+ * @param {String} id The control template id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getControlTemplateRelatedStandardTemplates = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/controltemplates/standardtemplates/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the control template related requirement templates
+ * @param {String} id The control template id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getControlTemplateRelatedRequirementTemplates = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/controltemplates/requirementtemplates/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=controlTemplate.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/customFields.js
 
 /**
  * Get custom fields by element type
@@ -82693,7 +83539,7 @@ const getByElementType = (elementType, token) => {
     });
 };
 //# sourceMappingURL=customFields.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/dashboard.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/dashboard.js
 
 /**
  * Add a card to the dashboard
@@ -82705,7 +83551,7 @@ const getByElementType = (elementType, token) => {
  */
 const addCardToDashboard = (id, position, data, authToken) => {
     return new Promise((resolve, reject) => {
-        const request = client.put(`/api/v1/dashboard/card`, {
+        const request = client.put(`/api/v1/exceed/dashboard/card`, {
             id: id,
             position: position,
             data: data || {},
@@ -82726,7 +83572,7 @@ const addCardToDashboard = (id, position, data, authToken) => {
  */
 const getDashboardCardsList = (authToken) => {
     return new Promise((resolve, reject) => {
-        const request = client.get(`/api/v1/dashboard/card`, {
+        const request = client.get(`/api/v1/exceed/dashboard/card`, {
             headers: { authorization: authToken },
         });
         request
@@ -82746,7 +83592,7 @@ const getDashboardCardsList = (authToken) => {
  */
 const removeCardFromDashboard = (id, authToken) => {
     return new Promise((resolve, reject) => {
-        const request = client.delete(`/api/v1/dashboard/card`, {
+        const request = client.delete(`/api/v1/exceed/dashboard/card`, {
             headers: { authorization: authToken },
             data: {
                 id: id,
@@ -82762,156 +83608,11 @@ const removeCardFromDashboard = (id, authToken) => {
     });
 };
 //# sourceMappingURL=dashboard.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/departmentTrainingPlans.js
-
-/**
- * Create department training plan and set information
- * @param {String} name
- * @param {String} summary
- * @param {String} skill
- * @param {Array<Activity>} activities
- * @param {String} token Authorization token
- * @returns {Promise<object>}
- */
-const createDepartmentTrainingPlan = (name, summary, skill, activities, token) => {
-    return new Promise((resolve, reject) => {
-        const requestData = {
-            name: name || "",
-            summary: summary || "",
-            skill: skill || "",
-            activities: activities || [],
-        };
-        const confirmationRequest = client.put("/api/v1/departmentTrainingPlans", requestData, {
-            headers: { authorization: token },
-        });
-        confirmationRequest
-            .then((response) => {
-            resolve(response.data);
-        })
-            .catch((error) => {
-            reject(error);
-        });
-    });
-};
-/**
- * Delete department training plan
- * @param {String} id The id of the template to be deleted
- * @param {String} token Authorization token
- * @returns {Promise<object>}
- */
-const deleteDepartmentTrainingPlan = (id, token) => {
-    return new Promise((resolve, reject) => {
-        const request = client.delete(`/api/v1/departmenttrainingplans/`, {
-            headers: { authorization: token },
-            data: {
-                id: id,
-            },
-        });
-        request
-            .then((response) => {
-            resolve(response.data);
-        })
-            .catch((error) => {
-            reject(error);
-        });
-    });
-};
-/**
- * Get department training plan information
- * @param {String} id The id of the plan
- * @param {String} version The version of the plan
- * @param {String} token Authorization token
- * @returns {Promise<object>}
- */
-const getDepartmentTrainingPlanInformationById = (id, version, token) => {
-    return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/departmenttrainingplans/${id}/${version}`, {
-            headers: { authorization: token },
-        });
-        confirmationRequest
-            .then((response) => {
-            resolve(response.data);
-        })
-            .catch((error) => {
-            reject(error);
-        });
-    });
-};
-/**
- * Get department training plan list
- * @param {String} filter The filter used to select the plan
- * @param {String} version The version of the plan
- * @param {String} token Authorization token
- * @returns {Promise<object>}
- */
-const getDepartmentTrainingPlanList = (filter, version, token) => {
-    return new Promise((resolve, reject) => {
-        const requestData = {
-            filter: filter || "",
-            version: version,
-        };
-        const confirmationRequest = client.post(`/api/v1/departmenttrainingplans`, requestData, {
-            headers: { authorization: token },
-        });
-        confirmationRequest
-            .then((response) => {
-            resolve(response.data);
-        })
-            .catch((error) => {
-            reject(error);
-        });
-    });
-};
-/**
- * Publish department training plan
- * @param {String} id The id of the plan to be published
- * @param {String} token Authorization token
- * @returns {Promise<object>}
- */
-const publishDepartmentTrainingPlan = (id, token) => {
-    return new Promise((resolve, reject) => {
-        const confirmationRequest = client.post(`/api/v1/departmenttrainingplans/publish/${id}`, {}, {
-            headers: { authorization: token },
-        });
-        confirmationRequest
-            .then((response) => {
-            resolve(response.data);
-        })
-            .catch((error) => {
-            reject(error);
-        });
-    });
-};
-/**
- * Set department training plan profile information
- * @param {String} id The id of the plan to be updated
- * @param {Object} data Data used to update the plan
- * @param {String} token Authorization token
- * @returns {Promise<object>}
- */
-const setDepartmentTrainingPlanInformation = (id, data, token) => {
-    return new Promise((resolve, reject) => {
-        const requestData = {
-            data: data,
-        };
-        const confirmationRequest = client.post(`/api/v1/departmenttrainingplans/${id}`, requestData, {
-            headers: { authorization: token },
-        });
-        confirmationRequest
-            .then((response) => {
-            resolve(response.data);
-        })
-            .catch((error) => {
-            reject(error);
-        });
-    });
-};
-//# sourceMappingURL=departmentTrainingPlans.js.map
 // EXTERNAL MODULE: ./node_modules/node-html-parser/dist/index.js
 var dist = __nccwpck_require__(3203);
 // EXTERNAL MODULE: ./node_modules/html2plaintext/index.js
 var html2plaintext = __nccwpck_require__(868);
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/integration.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/integration.js
 
 
 
@@ -83044,7 +83745,7 @@ const getContentInformationByUrl = (url, verb, token) => {
             url: url,
             verb: verb,
         };
-        const confirmationRequest = axiosClient_client.post(`/api/v1/contentproviders/getcontentinformationbyurl`, requestData, {
+        const confirmationRequest = axiosClient_client.post(`/api/v1/exceed/contentproviders/getcontentinformationbyurl`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -83138,7 +83839,7 @@ const getContentInformationByUrlFromBrowser = (url) => {
  */
 const getEnabledContentProviders = (userId, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = axiosClient_client.get(`/api/v1/contentproviders/getenabledcontentproviders/${userId}`, {
+        const confirmationRequest = axiosClient_client.get(`/api/v1/exceed/contentproviders/getenabledcontentproviders/${userId}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -83212,7 +83913,7 @@ const setDefaultIntegration = (id, token) => {
     });
 };
 //# sourceMappingURL=integration.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/integrationConfiguration.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/integrationConfiguration.js
 
 /**
  * Get the integration configuration
@@ -83293,8 +83994,31 @@ const testIntegrationConfiguration = (id, type, configuration, token) => {
     });
 };
 //# sourceMappingURL=integrationConfiguration.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/groups.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/groups.js
 
+/**
+ * Add applications to group
+ * @param {String} groupId The group Id
+ * @param {Array<String>} applications The application identifiers (from
+ *   `APPS`) to add to the group's entitlement set
+ * @param {String} authToken - Authentication token
+ * @returns {Promise<object>}
+ */
+const addApplicationsToGroup = (groupId, applications, authToken) => {
+    return new Promise((resolve, reject) => {
+        const request = client.post(`/api/v1/groups/applications/add`, {
+            groupId: groupId,
+            applications: applications,
+        }, { headers: { authorization: authToken } });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
 /**
  * Add permissions to group
  * @param {String} groupId The group Id
@@ -83464,6 +84188,29 @@ const getUserPermissions = (authToken) => {
     });
 };
 /**
+ * Remove applications from group
+ * @param {String} groupId The group Id
+ * @param {Array<String>} applications The application identifiers (from
+ *   `APPS`) to remove from the group's entitlement set
+ * @param {String} authToken The authentication token
+ * @returns {Promise<object>}
+ */
+const removeApplicationsFromGroup = (groupId, applications, authToken) => {
+    return new Promise((resolve, reject) => {
+        const request = client.post(`/api/v1/groups/applications/remove/`, {
+            groupId: groupId,
+            applications: applications,
+        }, { headers: { authorization: authToken } });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
  * Remove permissions from group
  * @param {String} groupId The group Id
  * @param {Array<String>} permissions The permissions to be removed from the group
@@ -83533,15 +84280,25 @@ const setDefault = (groupId, authToken) => {
  * @param {String} name The updated name of the group
  * @param {String} description The updated description of the group
  * @param {String} authToken The authentication token
+ * @param {Array<String>} [applications] Optional list of application
+ *   identifiers (from `APPS`) the group entitles its members to. Empty or
+ *   omitted means "unrestricted — inherit the tenant's full app set"; a
+ *   non-empty list restricts members to that subset.
  * @returns {Promise<object>}
  */
-const updateGroup = (groupId, name, description, authToken) => {
+const updateGroup = (groupId, name, description, authToken, applications) => {
     return new Promise((resolve, reject) => {
-        const request = client.patch(`/api/v1/groups/group/`, {
+        const body = {
             id: groupId,
             name: name,
             description: description,
-        }, { headers: { authorization: authToken } });
+        };
+        if (applications !== undefined) {
+            body.applications = applications;
+        }
+        const request = client.patch(`/api/v1/groups/group/`, body, {
+            headers: { authorization: authToken },
+        });
         request
             .then((response) => {
             resolve(response.data);
@@ -83552,7 +84309,176 @@ const updateGroup = (groupId, name, description, authToken) => {
     });
 };
 //# sourceMappingURL=groups.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/learningContent.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/labSessions.js
+
+
+
+/**
+ * Create a lab session
+ * @param {object} data The lab session data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createLabSession = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.post(`/api/v1/exceed/labsessions/`, { data }, { headers: { authorization: token } });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete lab session
+ * @param {String} id The id of the lab session to be deleted
+ * @param {String} token Authorization token
+ */
+const deleteLabSession = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.delete(`/api/v1/exceed/labsessions/`, {
+            headers: { authorization: token },
+            data: {
+                id: id,
+            },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the current user's lab session for a lab config
+ * @param {String} labConfigId The id of the lab config
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getLabSessionByUserAndLabConfig = (labConfigId, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/exceed/labsessions/byUserAndLabConfig/${labConfigId}`, { headers: { authorization: token } });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get lab session readiness status
+ * @param {String} id The id of the lab session
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getLabSessionReadiness = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/exceed/labsessions/${id}`, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get lab sessions for the current user
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getLabSessionsForUser = (token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/exceed/labsessions/byUser`, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Launch a lab session
+ * @param {String} id - The id of the lab session to launch
+ * @param {String} token - The authentication token
+ * @param {Function} onProgressStatus - Callback function for real-time progress updates
+ * @returns {Promise<object>}
+ */
+const launchLabSession = (id, mode = "default", token, onProgressStatus = null) => {
+    return new Promise((resolve, reject) => {
+        // Prepare data
+        const requestData = {
+            id,
+            mode,
+        };
+        // Use socket.io for real-time progress updates
+        const socket = io(getBaseUrl(), {
+            auth: {
+                token: token,
+            },
+            path: `/api/v1/realtime`,
+            transports: ["websocket"],
+            withCredentials: true,
+            reconnection: false,
+        });
+        // Socket event handlers
+        socket.on("connect", () => {
+            socket.emit("launchlabsession", requestData);
+        });
+        socket.on("progress", (data) => {
+            if (onProgressStatus) {
+                onProgressStatus(data);
+            }
+        });
+        socket.on("complete", (data) => {
+            socket.disconnect();
+            resolve(data);
+        });
+        socket.on("error", (err) => {
+            socket.disconnect();
+            reject(err);
+        });
+        socket.on("disconnect", (reason) => {
+            if (reason !== "io client disconnect") {
+                reject(new Error(`Socket disconnected: ${reason}`));
+            }
+        });
+    });
+};
+/**
+ * Update a lab session
+ * @param {String} id The id of the lab session to update
+ * @param {object} data The lab session data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const updateLabSession = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.put(`/api/v1/exceed/labsessions/${id}`, { data }, { headers: { authorization: token } });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=labSessions.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/learningContent.js
 
 
 
@@ -83567,7 +84493,7 @@ const createLearningContent = (data, token) => {
         const requestData = {
             data: data,
         };
-        const confirmationRequest = client.put("/api/v1/learningcontent", requestData, {
+        const confirmationRequest = client.put("/api/v1/exceed/learningcontent", requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -83593,7 +84519,7 @@ const deleteLearningContent = (id, comments, token) => {
     if (comments)
         data.comments = comments;
     return new Promise((resolve, reject) => {
-        const request = client.delete(`/api/v1/learningcontent/`, {
+        const request = client.delete(`/api/v1/exceed/learningcontent/`, {
             headers: { authorization: token },
             data: data,
         });
@@ -83617,7 +84543,7 @@ const deleteLearningContent = (id, comments, token) => {
  * */
 const deleteLearningContentMicroSkillLearningContentActivityMedia = (id, microskillid, activityId, mediaId, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.delete(`/api/v1/learningcontent/media/${id}/${microskillid}/${activityId}/${mediaId}`, {
+        const confirmationRequest = client.delete(`/api/v1/exceed/learningcontent/media/${id}/${microskillid}/${activityId}/${mediaId}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -83638,7 +84564,7 @@ const deleteLearningContentMicroSkillLearningContentActivityMedia = (id, microsk
 const discardLearningContentChanges = (id, token) => {
     return new Promise((resolve, reject) => {
         const data = {};
-        const request = client.get(`/api/v1/learningcontent/discard/${id}`, {
+        const request = client.get(`/api/v1/exceed/learningcontent/discard/${id}`, {
             headers: { authorization: token },
             data: data,
         });
@@ -83680,7 +84606,7 @@ const generateLearningActivityContent = (learningObjectives, skillId, microSkill
             auth: {
                 token: token,
             },
-            path: `/api/v1/contentgenerators`,
+            path: `/api/v1/realtime`,
             transports: ["websocket"],
             withCredentials: true,
             reconnection: false,
@@ -83726,7 +84652,7 @@ const generateMicroSkillTestKnowledge = (microSkill, token, onProgressStatus) =>
             auth: {
                 token: token,
             },
-            path: `/api/v1/contentgenerators`,
+            path: `/api/v1/realtime`,
             transports: ["websocket"],
             withCredentials: true,
             reconnection: false,
@@ -83764,7 +84690,7 @@ const generateMicroSkillTestKnowledge = (microSkill, token, onProgressStatus) =>
  */
 const getLearningContentInformationById = (id, version, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/learningcontent/${id}/${version}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/learningcontent/${id}/${version}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -83792,7 +84718,7 @@ const getLearningContentList = (filter, version, includeDeleted, token) => {
         };
         if (filter)
             requestData.filter = filter;
-        const confirmationRequest = client.post(`/api/v1/learningcontent`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/learningcontent`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -83815,7 +84741,7 @@ const getLearningContentList = (filter, version, includeDeleted, token) => {
  */
 const getLearningContentMicroSkillLearningContentActivitySceneAudio = (contentId, microSkillId, learningActivityId, sceneId, token, version) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/learningcontent/audio/${contentId}/${microSkillId}/${learningActivityId}/${sceneId}/${version}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/learningcontent/audio/${contentId}/${microSkillId}/${learningActivityId}/${sceneId}/${version}`, {
             headers: {
                 authorization: token,
             },
@@ -83841,7 +84767,7 @@ const getLearningContentMicroSkillLearningContentActivitySceneAudio = (contentId
  */
 const getLearningContentMicroSkillLearningContentActivityMedia = (id, microskillid, activityId, mediaId, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/learningcontent/media/${id}/${microskillid}/${activityId}/${mediaId}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/learningcontent/media/${id}/${microskillid}/${activityId}/${mediaId}`, {
             headers: {
                 authorization: token,
             },
@@ -83865,7 +84791,7 @@ const getLearningContentMicroSkillLearningContentActivityMedia = (id, microskill
 const migrateLearningContentStorageType = (id, token) => {
     return new Promise((resolve, reject) => {
         const data = {};
-        const confirmationRequest = client.post(`/api/v1/learningcontent/migratestorage/${id}`, data, {
+        const confirmationRequest = client.post(`/api/v1/exceed/learningcontent/migratestorage/${id}`, data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -83889,7 +84815,7 @@ const publishLearningContent = (id, comments, token) => {
         const data = {};
         if (comments)
             data.comments = comments;
-        const confirmationRequest = client.post(`/api/v1/learningcontent/publish/${id}`, data, {
+        const confirmationRequest = client.post(`/api/v1/exceed/learningcontent/publish/${id}`, data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -83914,7 +84840,7 @@ const setLearningContentInformation = (id, data, token) => {
             data: data,
             id: id,
         };
-        const confirmationRequest = client.post(`/api/v1/learningcontent/update`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/learningcontent/update`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -83939,7 +84865,7 @@ const setLearningContentPartialContentInformation = (id, data, token) => {
             data: data,
             id: id,
         };
-        const confirmationRequest = client.post(`/api/v1/learningcontent/updatepartialcontent/${id}`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/learningcontent/updatepartialcontent/${id}`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -83968,7 +84894,7 @@ const setLearningContentLearningContentInformation = (id, learningcontentid, mic
             learningcontentid: learningcontentid,
             microSkillId: microSkillId,
         };
-        const confirmationRequest = client.post(`/api/v1/learningcontent/updatelearningcontent/`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/learningcontent/updatelearningcontent/`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -83993,7 +84919,7 @@ const setLearningContentLearningMicroSkillContentInformation = (id, microskillid
         const requestData = {
             data: data,
         };
-        const confirmationRequest = client.post(`/api/v1/learningcontent/updatemicroskilllearningcontent/${id}/${microskillid}`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/learningcontent/updatemicroskilllearningcontent/${id}/${microskillid}`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84017,7 +84943,7 @@ const setLearningContentTags = (id, tags, token) => {
             tags: tags,
             id: id,
         };
-        const confirmationRequest = client.post(`/api/v1/learningcontent/updatetags/`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/learningcontent/updatetags/`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84043,11 +84969,171 @@ const uploadLearningContentMicroSkillLearningContentActivityMedia = (id, microsk
     const formData = new FormData();
     formData.append("file", blob, "media.bin");
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.post(`/api/v1/learningcontent/media/${id}/${microskillid}/${activityId}/${mediaId}`, formData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/learningcontent/media/${id}/${microskillid}/${activityId}/${mediaId}`, formData, {
             headers: {
                 authorization: token,
                 "Content-Type": "multipart/form-data",
             },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Generate lab configuration content
+ * @param {String} skillId The id of the skill
+ * @param {String} proficiencyLevel The proficiency level
+ * @param {Number} labType The lab type
+ * @param {Object} labConfiguration The lab configuration
+ * @param {String} token Authorization token
+ * @param {String} integrationId Optional integration id
+ * @param {Function} onProgressStatus Optional callback for progress updates
+ * @returns {Promise<object>} The generated content
+ */
+const generateLabConfigurationContent = (skillId, proficiencyLevel, labType, labConfiguration, token, integrationId, onProgressStatus) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            skillId: skillId,
+            proficiencyLevel: proficiencyLevel,
+            labType: labType,
+            labConfiguration: labConfiguration,
+        };
+        if (integrationId) {
+            requestData.integrationId = integrationId;
+        }
+        // Use socket.io for real-time progress updates
+        const socket = io(getBaseUrl(), {
+            auth: {
+                token: token,
+            },
+            path: `/api/v1/realtime`,
+            transports: ["websocket"],
+            withCredentials: true,
+            reconnection: false,
+        });
+        // Socket event handlers
+        socket.on("connect", () => {
+            socket.emit("generatelabconfigurationcontent", requestData);
+        });
+        socket.on("progress", (data) => {
+            if (onProgressStatus) {
+                onProgressStatus(data);
+            }
+        });
+        socket.on("complete", (data) => {
+            socket.disconnect();
+            resolve(data);
+        });
+        socket.on("error", (err) => {
+            socket.disconnect();
+            reject(err);
+        });
+        socket.on("disconnect", (reason) => {
+            if (reason !== "io client disconnect") {
+                reject(new Error(`Socket disconnected: ${reason}`));
+            }
+        });
+    });
+};
+/**
+ * Get media for a specific lab configuration
+ * @param {String} id The id of the learning content
+ * @param {String} labConfigurationId The id of the lab configuration
+ * @param {String} mediaId The id of the media
+ * @param {String} token Authorization token
+ * @returns {Promise<object>} The response from the server
+ */
+const getLearningContentLabConfigurationMedia = (id, labConfigurationId, mediaId, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.get(`/api/v1/exceed/learningcontent/media/lab/${id}/${labConfigurationId}/${mediaId}`, {
+            headers: {
+                authorization: token,
+            },
+            responseType: "blob",
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Upload media for a specific lab configuration
+ * @param {String} id The id of the learning content
+ * @param {String} labConfigurationId The id of the lab configuration
+ * @param {String} mediaId The id of the media
+ * @param {Blob} blob The media file to upload
+ * @param {String} token Authorization token
+ * @returns {Promise<object>} The response from the server
+ */
+const uploadLearningContentLabConfigurationMedia = (id, labConfigurationId, mediaId, blob, token) => {
+    const formData = new FormData();
+    formData.append("file", blob, "media.bin");
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.post(`/api/v1/exceed/learningcontent/media/lab/${id}/${labConfigurationId}/${mediaId}`, formData, {
+            headers: {
+                authorization: token,
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Update a single lab configuration for a specific learning content
+ * @param {String} id The id of the learning content
+ * @param {String} labConfigurationId The id of the lab configuration
+ * @param {Object} data The lab configuration data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>} The response from the server
+ */
+const updateLearningContentLabConfiguration = (id, labConfigurationId, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            id: id,
+            labConfigurationId: labConfigurationId,
+            data: data,
+        };
+        const confirmationRequest = client.post(`/api/v1/exceed/learningcontent/updatelabconfiguration`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Update lab configurations for a specific learning content
+ * @param {String} id The id of the learning content
+ * @param {Array<Object>} data The lab configurations data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>} The response from the server
+ */
+const updateLearningContentLabConfigurations = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+        };
+        const confirmationRequest = client.post(`/api/v1/exceed/learningcontent/updatelabconfigurations/${id}`, requestData, {
+            headers: { authorization: token },
         });
         confirmationRequest
             .then((response) => {
@@ -84070,7 +85156,7 @@ const watchLearningContent = (id, watch, token) => {
             id: id,
             watch: watch,
         };
-        const confirmationRequest = client.post(`/api/v1/learningcontent/watch`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/learningcontent/watch`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84083,7 +85169,7 @@ const watchLearningContent = (id, watch, token) => {
     });
 };
 //# sourceMappingURL=learningContent.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/learningPath.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/learningPath.js
 
 /**
  * Create learning path and set information
@@ -84093,7 +85179,7 @@ const watchLearningContent = (id, watch, token) => {
  */
 const createLearningPath = (data, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.put("/api/v1/learningpaths", { data: data }, {
+        const confirmationRequest = client.put("/api/v1/exceed/learningpaths", { data: data }, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84119,7 +85205,7 @@ const deleteLearningPath = (id, comments, token) => {
         };
         if (comments)
             data.comments = comments;
-        const request = client.delete(`/api/v1/learningpaths/`, {
+        const request = client.delete(`/api/v1/exceed/learningpaths/`, {
             headers: { authorization: token },
             data: data,
         });
@@ -84141,7 +85227,7 @@ const deleteLearningPath = (id, comments, token) => {
 const discardLearningPathChanges = (id, token) => {
     return new Promise((resolve, reject) => {
         const data = {};
-        const request = client.get(`/api/v1/learningpaths/discard/${id}`, {
+        const request = client.get(`/api/v1/exceed/learningpaths/discard/${id}`, {
             headers: { authorization: token },
             data: data,
         });
@@ -84163,7 +85249,7 @@ const discardLearningPathChanges = (id, token) => {
  */
 const getLearningPathInformationById = (id, version, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/learningpaths/${id}/${version}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/learningpaths/${id}/${version}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84191,7 +85277,7 @@ const getLearningPathsList = (list, version, includeDeleted, token) => {
         };
         if (list)
             requestData.list = list;
-        const confirmationRequest = client.post(`/api/v1/learningpaths`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/learningpaths`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84215,7 +85301,7 @@ const publishLearningPath = (id, comments, token) => {
         const data = {};
         if (comments)
             data.comments = comments;
-        const confirmationRequest = client.post(`/api/v1/learningpaths/publish/${id}`, data, {
+        const confirmationRequest = client.post(`/api/v1/exceed/learningpaths/publish/${id}`, data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84240,7 +85326,7 @@ const setLearningPathInformation = (id, data, token) => {
             data: data,
             id: id,
         };
-        const confirmationRequest = client.post(`/api/v1/learningpaths/update/`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/learningpaths/update/`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84265,7 +85351,7 @@ const setLearningPathTags = (id, tags, token) => {
             tags: tags,
             id: id,
         };
-        const confirmationRequest = client.post(`/api/v1/learningpaths/updatetags/`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/learningpaths/updatetags/`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84278,7 +85364,7 @@ const setLearningPathTags = (id, tags, token) => {
     });
 };
 //# sourceMappingURL=learningPath.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/logger.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/logger.js
 
 /**
  * Create comments for a specified element id
@@ -84334,7 +85420,7 @@ const getListByElementId = (elementId, page, elementsPerPage, token) => {
     });
 };
 //# sourceMappingURL=logger.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/microSkillsQuizes.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/microSkillsQuizes.js
 
 /**
  * Get responses for a microskill quiz
@@ -84345,7 +85431,7 @@ const getListByElementId = (elementId, page, elementsPerPage, token) => {
  */
 const getResponses = (learningContentId, microSkillId, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/microskillsresponses/${learningContentId}/${microSkillId}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/microskillsresponses/${learningContentId}/${microSkillId}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84370,7 +85456,7 @@ const saveResponses = (learningContentId, microSkillId, responses, token) => {
         const data = {
             responses: responses,
         };
-        const confirmationRequest = client.post(`/api/v1/microskillsresponses/${learningContentId}/${microSkillId}`, data, {
+        const confirmationRequest = client.post(`/api/v1/exceed/microskillsresponses/${learningContentId}/${microSkillId}`, data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84383,7 +85469,637 @@ const saveResponses = (learningContentId, microSkillId, responses, token) => {
     });
 };
 //# sourceMappingURL=microSkillsQuizes.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/quotas.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/policy.js
+
+/**
+ * Create policy and set information
+ * @param {Object} data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createPolicy = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.put("/api/v1/shield/policies", { data: data }, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Create policies from templates
+ * @param {Array<String>} templateIds
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createPoliciesFromTemplates = (templateIds, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            templateIds: templateIds,
+        };
+        const confirmationRequest = client.put("/api/v1/shield/policies/createfromtemplate/", requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete policy
+ * @param {String} id The id of the policy to be deleted
+ * @param {String} comments The comments included with the deletion
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const deletePolicy = (id, comments, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {
+            id: id,
+        };
+        if (comments)
+            data.comments = comments;
+        const request = client.delete(`/api/v1/shield/policies/`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Discard the policy draft changes
+ * @param {String} id The id of the policy to be discarded
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const discardPolicyChanges = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        const request = client.get(`/api/v1/shield/policies/discard/${id}`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get policy information
+ * @param {String} id The id of the policy
+ * @param {String} version The version of the policy
+ * @param {Boolean} returnNullIfVersionNotFound When true it will return null if the version is not found
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getPolicyInformationById = (id, version, returnNullIfVersionNotFound, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.get(`/api/v1/shield/policies/${id}/${version}/${returnNullIfVersionNotFound}`, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get policy list
+ * @param {Array<String>} filter The filter used to select the policy
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted If true it will return deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getPolicyList = (filter, version, includeDeleted, returnDefaultIfVersionNotAvailable, details, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            includeDeleted: includeDeleted,
+            details: details,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+            version: version,
+            filter: filter,
+        };
+        if (filter)
+            requestData.filter = filter;
+        const confirmationRequest = client.post(`/api/v1/shield/policies`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Publish policy
+ * @param {String} id The id of the policy to be published
+ * @param {String} comments The comments to be include with the request
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const publishPolicy = (id, comments, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        if (comments)
+            data.comments = comments;
+        const confirmationRequest = client.post(`/api/v1/shield/policies/publish/${id}`, data, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Set policy information
+ * @param {String} id The id of the policy to be updated
+ * @param {Object} data Data used to update the policy
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setPolicyInformation = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/policies/update`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Set the policy information from template
+ * @param {String} id The id of the policy to be updated
+ * @param {Object} data Data used to update the policy
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setPolicyInformationFromTemplate = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/policies/updatefromtemplate/`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Watch policy
+ * @param {String} id The id of the policy to be updated
+ * @param {Boolean} watch Set to true or false
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const watchPolicy = (id, watch, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            id: id,
+            watch: watch,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/policies/watch`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the policy related standards
+ * @param {String} id The policy id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getPolicyStandards = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/policies/standards/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the policy related requirements
+ * @param {String} id The policy id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getPolicyRequirements = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/policies/requirements/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the policy related controls
+ * @param {String} id The policy id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getPolicyControls = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/policies/controls/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=policy.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/policyTemplate.js
+
+/**
+ * Create policy template and set information
+ * @param {Object} data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createPolicyTemplate = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+        };
+        const confirmationRequest = client.put("/api/v1/admin/policytemplates", requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete policy template
+ * @param {number} id The id of the template to be deleted
+ * @param {String} comments The comments included with the deletion
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const deletePolicyTemplate = (id, comments, token) => {
+    const data = {
+        id: id,
+    };
+    if (comments)
+        data.comments = comments;
+    return new Promise((resolve, reject) => {
+        const request = client.delete(`/api/v1/admin/policytemplates/`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Discard the policy template draft changes
+ * @param {String} id The id of the policy template to be discarded
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const discardPolicyTemplateChanges = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        const request = client.get(`/api/v1/admin/policytemplates/discard/${id}`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get policy template information
+ * @param {String} id The id of the template
+ * @param {String} version The version of the template
+ * @param {Boolean} returnNullIfVersionNotFound When true it will return null if the version is not found
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getPolicyTemplateInformationById = (id, version, returnNullIfVersionNotFound, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.get(`/api/v1/admin/policytemplates/${id}/${version}/${returnNullIfVersionNotFound}`, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get policy template list
+ * @param {Array<String>} filter The filter used to select the template
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getPolicyTemplateList = (filter, version, includeDeleted, details, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            includeDeleted: includeDeleted,
+            details: details,
+            version: version,
+        };
+        if (filter)
+            requestData.filter = filter;
+        const confirmationRequest = client.post(`/api/v1/admin/policytemplates`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Publish policy template
+ * @param {number} id The id of the template to be published
+ * @param {String} comments The comments to be include with the request
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const publishPolicyTemplate = (id, comments, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        if (comments)
+            data.comments = comments;
+        const confirmationRequest = client.post(`/api/v1/admin/policytemplates/publish/${id}`, data, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Set policy template information
+ * @param {String} id The id of the template to be updated
+ * @param {Object} data Data used to update the template
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setPolicyTemplateInformation = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/policytemplates/update`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Update the policy template tags
+ * @param {String} id The id of the template to be updated
+ * @param {Object} tags Updated template tags
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setPolicyTemplateTags = (id, tags, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            tags: tags,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/policytemplates/updatetags`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the policy template related standard templates
+ * @param {String} id The policy template id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getPolicyTemplateRelatedStandardTemplates = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/policytemplates/standardtemplates/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the policy template related requirement templates
+ * @param {String} id The policy template id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getPolicyTemplateRelatedRequirementTemplates = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/policytemplates/requirementtemplates/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the policy template related control templates
+ * @param {String} id The policy template id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getPolicyTemplateRelatedControlTemplates = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/policytemplates/controltemplates/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=policyTemplate.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/quotas.js
 
 /**
  * Get the current quota for the user and tenant
@@ -84429,17 +86145,17 @@ const increaseQuotaUtilization = (quotaId, value, token) => {
     });
 };
 //# sourceMappingURL=quotas.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/role.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/reports.js
 
 /**
- * Create role and set information
- * @param {Object} data
+ * Get objective KPI actuals for a specific KPI
+ * @param {Object} data The KPI data
  * @param {String} token Authorization token
- * @returns {Promise<object>}
+ * @returns {Promise<object>} The objective KPI actuals
  */
-const createRole = (data, token) => {
+const getObjectiveKPIActuals = (data, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.put("/api/v1/roles", { data: data }, {
+        const confirmationRequest = client.post(`/api/v1/exceed/reports/getobjectivekpiactuals/`, data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84452,24 +86168,59 @@ const createRole = (data, token) => {
     });
 };
 /**
- * Create from from template
- * @param {String} templateId
- * @param {Object} data
+ * Get objectives KPI actuals
  * @param {String} token Authorization token
- * @returns {Promise<object>}
+ * @returns {Promise<object>} The objectives KPI actuals
  */
-const createRoleFromTemplate = (templateId, data, token) => {
+const getObjectivesKpiActuals = (token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/exceed/reports/getobjectiveskpiactuals/`, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get available filters for training summary details
+ * @param {String} token Authorization token
+ * @returns {Promise<object>} The available filter options (businessUnits, organizations, costCenters, teams)
+ */
+const getTrainingSummaryDetailFilters = (token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/exceed/reports/trainingsummarydetailfilters`, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get training summary details filtered by team dimensions, schema, and time interval
+ * @param {Object} filter Filter with optional businessUnit, organization, costCenter, teamIds
+ * @param {String} schema The data schema to return
+ * @param {String|Object} interval "lastWeek" or a custom range with start/end month and year
+ * @param {String} token Authorization token
+ * @returns {Promise<object[]>} The training summary details
+ */
+const getTrainingSummaryDetails = (filter, schema, interval, token) => {
     return new Promise((resolve, reject) => {
         const requestData = {
-            data: data,
-            templateId: templateId,
-            includeDeleted: false,
-            includeDetailedInformation: false,
-            namesOnly: false,
-            returnDefaultIfVersionNotAvailable: false,
-            version: "1.0",
+            filter: filter,
+            schema: schema,
+            interval: interval,
         };
-        const confirmationRequest = client.put("/api/v1/roles/createfromtemplate/", requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/reports/trainingsummarydetails`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84478,6 +86229,814 @@ const createRoleFromTemplate = (templateId, data, token) => {
         })
             .catch((error) => {
             reject(error);
+        });
+    });
+};
+//# sourceMappingURL=reports.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/repositoryPipelines.js
+
+/**
+ * Create repository pipeline
+ * @param {Object} data The repository pipeline data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createRepositoryPipeline = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.put(`/api/v1/shield/repositorypipelines`, data, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get all repository pipelines
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getRepositoryPipelines = (token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/shield/repositorypipelines`, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get repository pipeline by id
+ * @param {String} id The repository pipeline id
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getRepositoryPipelineById = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/shield/repositorypipelines/${id}`, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Update repository pipeline
+ * @param {Object} data The repository pipeline data to update
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const updateRepositoryPipeline = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.post(`/api/v1/shield/repositorypipelines/update`, data, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete repository pipeline
+ * @param {String} id The id of the repository pipeline to delete
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const deleteRepositoryPipeline = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.delete(`/api/v1/shield/repositorypipelines`, {
+            headers: { authorization: token },
+            data: { id: id },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=repositoryPipelines.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/requirement.js
+
+/**
+ * Create requirement and set information
+ * @param {Object} data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createRequirement = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.put("/api/v1/shield/requirements", { data: data }, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Create requirements from templates
+ * @param {Array<String>} templateIds
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createRequirementsFromTemplates = (templateIds, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            templateIds: templateIds,
+        };
+        const confirmationRequest = client.put("/api/v1/shield/requirements/createfromtemplate/", requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete requirement
+ * @param {String} id The id of the requirement to be deleted
+ * @param {String} comments The comments included with the deletion
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const deleteRequirement = (id, comments, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {
+            id: id,
+        };
+        if (comments)
+            data.comments = comments;
+        const request = client.delete(`/api/v1/shield/requirements/`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Discard the requirement draft changes
+ * @param {String} id The id of the requirement to be discarded
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const discardRequirementChanges = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        const request = client.get(`/api/v1/shield/requirements/discard/${id}`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get requirement information
+ * @param {String} id The id of the requirement
+ * @param {String} version The version of the requirement
+ * @param {Boolean} returnNullIfVersionNotFound When true it will return null if the version is not found
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getRequirementInformationById = (id, version, returnNullIfVersionNotFound, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.get(`/api/v1/shield/requirements/${id}/${version}/${returnNullIfVersionNotFound}`, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get requirement list
+ * @param {Array<String>} filter The filter used to select the requirement
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted If true it will return deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getRequirementList = (filter, version, includeDeleted, returnDefaultIfVersionNotAvailable, details, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            includeDeleted: includeDeleted,
+            details: details,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+            version: version,
+            filter: filter,
+        };
+        if (filter)
+            requestData.filter = filter;
+        const confirmationRequest = client.post(`/api/v1/shield/requirements`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Publish requirement
+ * @param {String} id The id of the requirement to be published
+ * @param {String} comments The comments to be include with the request
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const publishRequirement = (id, comments, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        if (comments)
+            data.comments = comments;
+        const confirmationRequest = client.post(`/api/v1/shield/requirements/publish/${id}`, data, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Set requirement information
+ * @param {String} id The id of the requirement to be updated
+ * @param {Object} data Data used to update the requirement
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setRequirementInformation = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/requirements/update`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Set the requirement information from template
+ * @param {String} id The id of the requirement to be updated
+ * @param {Object} data Data used to update the requirement
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setRequirementInformationFromTemplate = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/requirements/updatefromtemplate/`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Watch requirement
+ * @param {String} id The id of the requirement to be updated
+ * @param {Boolean} watch Set to true or false
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const watchRequirement = (id, watch, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            id: id,
+            watch: watch,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/requirements/watch`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the requirement related policies
+ * @param {String} id The requirement id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getRequirementRelatedPolicies = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/requirements/policies/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the requirement related standards
+ * @param {String} id The requirement id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getRequirementRelatedStandards = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/requirements/standards/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the requirement related controls
+ * @param {String} id The requirement id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getRequirementControls = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/requirements/controls/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=requirement.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/requirementTemplate.js
+
+/**
+ * Create requirement template and set information
+ * @param {Object} data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createRequirementTemplate = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+        };
+        const confirmationRequest = client.put("/api/v1/admin/requirementtemplates", requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete requirement template
+ * @param {number} id The id of the template to be deleted
+ * @param {String} comments The comments included with the deletion
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const deleteRequirementTemplate = (id, comments, token) => {
+    const data = {
+        id: id,
+    };
+    if (comments)
+        data.comments = comments;
+    return new Promise((resolve, reject) => {
+        const request = client.delete(`/api/v1/admin/requirementtemplates/`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Discard the requirement template draft changes
+ * @param {String} id The id of the requirement template to be discarded
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const discardRequirementTemplateChanges = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        const request = client.get(`/api/v1/admin/requirementtemplates/discard/${id}`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get requirement template information
+ * @param {String} id The id of the template
+ * @param {String} version The version of the template
+ * @param {Boolean} returnNullIfVersionNotFound When true it will return null if the version is not found
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getRequirementTemplateInformationById = (id, version, returnNullIfVersionNotFound, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.get(`/api/v1/admin/requirementtemplates/${id}/${version}/${returnNullIfVersionNotFound}`, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get requirement template list
+ * @param {Array<String>} filter The filter used to select the template
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getRequirementTemplateList = (filter, version, includeDeleted, details, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            includeDeleted: includeDeleted,
+            details: details,
+            version: version,
+        };
+        if (filter)
+            requestData.filter = filter;
+        const confirmationRequest = client.post(`/api/v1/admin/requirementtemplates`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Publish requirement template
+ * @param {number} id The id of the template to be published
+ * @param {String} comments The comments to be include with the request
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const publishRequirementTemplate = (id, comments, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        if (comments)
+            data.comments = comments;
+        const confirmationRequest = client.post(`/api/v1/admin/requirementtemplates/publish/${id}`, data, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Set requirement template information
+ * @param {String} id The id of the template to be updated
+ * @param {Object} data Data used to update the template
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setRequirementTemplateInformation = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/requirementtemplates/update`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Update the requirement template tags
+ * @param {String} id The id of the template to be updated
+ * @param {Object} tags Updated template tags
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setRequirementTemplateTags = (id, tags, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            tags: tags,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/requirementtemplates/updatetags`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the requirement template related policy templates
+ * @param {String} id The requirement template id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getRequirementTemplateRelatedPolicyTemplates = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/requirementtemplates/policytemplates/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the requirement template related standard templates
+ * @param {String} id The requirement template id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getRequirementTemplateRelatedStandardTemplates = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/requirementtemplates/standardtemplates/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the requirement template related control templates
+ * @param {String} id The requirement template id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getRequirementTemplateRelatedControlTemplates = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/requirementtemplates/controltemplates/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=requirementTemplate.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/role.js
+
+
+
+/**
+ * Create role and set information
+ * @param {Object} data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createRole = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.put("/api/v1/exceed/roles", { data: data }, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Create a role from a template over a websocket so progress can be streamed
+ * back to the caller. The server emits 0–90% during the actual creation and
+ * 90–100% during the post-create event fan-out.
+ * @param {String} templateId The id of the role template to create from
+ * @param {Object} data Role overrides (skills, settings, etc.)
+ * @param {String} token Authorization token
+ * @param {Function} onProgressStatus Optional callback for progress updates
+ * @returns {Promise<object>} Resolves with `{ role, skills }`
+ */
+const createRoleFromTemplate = (templateId, data, token, onProgressStatus) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            templateId: templateId,
+        };
+        // Use socket.io for real-time progress updates
+        const socket = io(getBaseUrl(), {
+            auth: {
+                token: token,
+            },
+            path: `/api/v1/realtime`,
+            transports: ["websocket"],
+            withCredentials: true,
+            reconnection: false,
+        });
+        // Socket event handlers
+        socket.on("connect", () => {
+            socket.emit("createrolefromtemplate", requestData);
+        });
+        socket.on("progress", (progress) => {
+            if (onProgressStatus) {
+                onProgressStatus(progress);
+            }
+        });
+        socket.on("complete", (result) => {
+            socket.disconnect();
+            resolve(result);
+        });
+        socket.on("error", (err) => {
+            socket.disconnect();
+            reject(err);
+        });
+        socket.on("disconnect", (reason) => {
+            if (reason !== "io client disconnect") {
+                reject(new Error(`Socket disconnected: ${reason}`));
+            }
         });
     });
 };
@@ -84495,7 +87054,7 @@ const deleteRole = (id, comments, token) => {
         };
         if (comments)
             data.comments = comments;
-        const request = client.delete(`/api/v1/roles/`, {
+        const request = client.delete(`/api/v1/exceed/roles/`, {
             headers: { authorization: token },
             data: data,
         });
@@ -84517,7 +87076,7 @@ const deleteRole = (id, comments, token) => {
 const discardRoleChanges = (id, token) => {
     return new Promise((resolve, reject) => {
         const data = {};
-        const request = client.get(`/api/v1/roles/discard/${id}`, {
+        const request = client.get(`/api/v1/exceed/roles/discard/${id}`, {
             headers: { authorization: token },
             data: data,
         });
@@ -84537,7 +87096,7 @@ const discardRoleChanges = (id, token) => {
  */
 const getImportedRoleTemplates = (token) => {
     return new Promise((resolve, reject) => {
-        const request = client.get(`/api/v1/roles/getimportedroletemplates`, {
+        const request = client.get(`/api/v1/exceed/roles/getimportedroletemplates`, {
             headers: { authorization: token },
         });
         request
@@ -84559,7 +87118,7 @@ const getImportedRoleTemplates = (token) => {
  */
 const getRoleInformationById = (id, version, returnNullIfVersionNotFound, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/roles/role/${id}/${version}/${returnNullIfVersionNotFound}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/roles/role/${id}/${version}/${returnNullIfVersionNotFound}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84593,7 +87152,7 @@ const getRolesList = (filter, version, includeDeleted, includeDetailedInformatio
         };
         if (filter)
             requestData.filter = filter;
-        const confirmationRequest = client.post(`/api/v1/roles`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/roles`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84613,7 +87172,7 @@ const getRolesList = (filter, version, includeDeleted, includeDetailedInformatio
  */
 const getRoleTemplateUpdates = (id, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/roles/getroletemplateupdates/${id}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/roles/getroletemplateupdates/${id}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84626,25 +87185,50 @@ const getRoleTemplateUpdates = (id, token) => {
     });
 };
 /**
- * Import role templates
+ * Import role templates over a websocket so progress can be streamed back to
+ * the caller. The server emits 0–90% during the actual import and 90–100%
+ * during the post-import event fan-out.
  * @param {Array<Object>} data The list of role templates to be imported
- * @param {String} token
- * @returns {Promise<object>}
+ * @param {String} token Authorization token
+ * @param {Function} onProgressStatus Optional callback for progress updates
+ * @returns {Promise<object>} Resolves with `{ roles, skills }`
  */
-const importRoleTemplates = (data, token) => {
+const importRoleTemplates = (data, token, onProgressStatus) => {
     return new Promise((resolve, reject) => {
         const requestData = {
             data: data,
         };
-        const confirmationRequest = client.post(`/api/v1/roles/importRoleTemplates`, requestData, {
-            headers: { authorization: token },
+        // Use socket.io for real-time progress updates
+        const socket = io(getBaseUrl(), {
+            auth: {
+                token: token,
+            },
+            path: `/api/v1/realtime`,
+            transports: ["websocket"],
+            withCredentials: true,
+            reconnection: false,
         });
-        confirmationRequest
-            .then((response) => {
-            resolve(response.data);
-        })
-            .catch((error) => {
-            reject(error);
+        // Socket event handlers
+        socket.on("connect", () => {
+            socket.emit("importroles", requestData);
+        });
+        socket.on("progress", (progress) => {
+            if (onProgressStatus) {
+                onProgressStatus(progress);
+            }
+        });
+        socket.on("complete", (result) => {
+            socket.disconnect();
+            resolve(result);
+        });
+        socket.on("error", (err) => {
+            socket.disconnect();
+            reject(err);
+        });
+        socket.on("disconnect", (reason) => {
+            if (reason !== "io client disconnect") {
+                reject(new Error(`Socket disconnected: ${reason}`));
+            }
         });
     });
 };
@@ -84660,7 +87244,7 @@ const publishRole = (id, comments, token) => {
         const data = {};
         if (comments)
             data.comments = comments;
-        const confirmationRequest = client.post(`/api/v1/roles/publish/${id}`, data, {
+        const confirmationRequest = client.post(`/api/v1/exceed/roles/publish/${id}`, data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84685,7 +87269,7 @@ const setRoleInformation = (id, data, token) => {
             data: data,
             id: id,
         };
-        const confirmationRequest = client.post(`/api/v1/roles/update`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/roles/update`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84710,7 +87294,7 @@ const setRoleInformationFromTemplate = (id, data, token) => {
             data: data,
             id: id,
         };
-        const confirmationRequest = client.post(`/api/v1/roles/updatefromtemplate/`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/roles/updatefromtemplate/`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84738,7 +87322,7 @@ const setUserRoles = (id, roles, jobDescription, token) => {
         };
         if (id)
             requestData.userid = id;
-        const request = client.post(`/api/v1/roles/settouser/`, requestData, {
+        const request = client.post(`/api/v1/exceed/roles/settouser/`, requestData, {
             headers: { authorization: token },
         });
         request
@@ -84763,7 +87347,7 @@ const watchRole = (id, watch, token) => {
             id: id,
             watch: watch,
         };
-        const confirmationRequest = client.post(`/api/v1/roles/watch`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/roles/watch`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84776,7 +87360,7 @@ const watchRole = (id, watch, token) => {
     });
 };
 //# sourceMappingURL=role.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/roleTemplate.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/roleTemplate.js
 
 /**
  * Create role template and set information
@@ -84789,7 +87373,7 @@ const createRoleTemplate = (data, token) => {
         const requestData = {
             data: data,
         };
-        const confirmationRequest = client.put("/api/v1/roletemplates", requestData, {
+        const confirmationRequest = client.put("/api/v1/admin/roletemplates", requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84815,7 +87399,7 @@ const deleteRoleTemplate = (id, comments, token) => {
         };
         if (comments)
             data.comments = comments;
-        const request = client.delete(`/api/v1/roletemplates/`, {
+        const request = client.delete(`/api/v1/admin/roletemplates/`, {
             headers: { authorization: token },
             data: data,
         });
@@ -84837,7 +87421,7 @@ const deleteRoleTemplate = (id, comments, token) => {
 const discardRoleTemplateChanges = (id, token) => {
     return new Promise((resolve, reject) => {
         const data = {};
-        const request = client.get(`/api/v1/roletemplates/discard/${id}`, {
+        const request = client.get(`/api/v1/admin/roletemplates/discard/${id}`, {
             headers: { authorization: token },
             data: data,
         });
@@ -84859,7 +87443,7 @@ const discardRoleTemplateChanges = (id, token) => {
  */
 const getRoleTemplateInformationById = (id, version, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/roletemplates/${id}/${version}`, {
+        const confirmationRequest = client.get(`/api/v1/admin/roletemplates/${id}/${version}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84889,7 +87473,7 @@ const getRoleTemplateList = (filter, version, includeDeleted, namesOnly, token) 
         };
         if (filter)
             requestData.filter = filter;
-        const confirmationRequest = client.post(`/api/v1/roletemplates`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/admin/roletemplates`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84913,7 +87497,7 @@ const publishTemplate = (id, comments, token) => {
         const data = {};
         if (comments)
             data.comments = comments;
-        const confirmationRequest = client.post(`/api/v1/roletemplates/publish/${id}`, data, {
+        const confirmationRequest = client.post(`/api/v1/admin/roletemplates/publish/${id}`, data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84938,7 +87522,7 @@ const setTemplateInformation = (id, data, token) => {
             data: data,
             id: id,
         };
-        const confirmationRequest = client.post(`/api/v1/roletemplates/update`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/admin/roletemplates/update`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84963,7 +87547,7 @@ const setTemplateTags = (id, tags, token) => {
             tags: tags,
             id: id,
         };
-        const confirmationRequest = client.post(`/api/v1/roletemplates/updatetags/`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/admin/roletemplates/updatetags/`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -84988,7 +87572,7 @@ const watchRoleTemplate = (id, watch, token) => {
             id: id,
             watch: watch,
         };
-        const confirmationRequest = client.post(`/api/v1/roletemplates/watch`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/admin/roletemplates/watch`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85001,7 +87585,385 @@ const watchRoleTemplate = (id, watch, token) => {
     });
 };
 //# sourceMappingURL=roleTemplate.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/security.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/sdlcConfigurations.js
+
+/**
+ * Create SDLC configuration
+ * @param {Object} data The SDLC configuration data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createSdlcConfiguration = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.put(`/api/v1/shield/sdlcconfigurations`, data, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get all SDLC configurations
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getSdlcConfigurations = (token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/shield/sdlcconfigurations`, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get SDLC configuration by id
+ * @param {String} id The SDLC configuration id
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getSdlcConfigurationById = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/shield/sdlcconfigurations/${id}`, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Update SDLC configuration
+ * @param {Object} data The SDLC configuration data to update
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const updateSdlcConfiguration = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.post(`/api/v1/shield/sdlcconfigurations/update`, data, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete SDLC configuration
+ * @param {String} id The id of the SDLC configuration to delete
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const deleteSdlcConfiguration = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.delete(`/api/v1/shield/sdlcconfigurations`, {
+            headers: { authorization: token },
+            data: { id: id },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=sdlcConfigurations.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/sdlcEvaluationRuns.js
+
+/**
+ * Create SDLC evaluation run
+ * @param {Object} data The SDLC evaluation run data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createSdlcEvaluationRun = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.put(`/api/v1/shield/sdlcevaluationruns`, data, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get all SDLC evaluation runs
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getSdlcEvaluationRuns = (token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/shield/sdlcevaluationruns`, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get SDLC evaluation run by id
+ * @param {String} id The SDLC evaluation run id
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getSdlcEvaluationRunById = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/shield/sdlcevaluationruns/${id}`, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Update SDLC evaluation run
+ * @param {Object} data The SDLC evaluation run data to update
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const updateSdlcEvaluationRun = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.post(`/api/v1/shield/sdlcevaluationruns/update`, data, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete SDLC evaluation run
+ * @param {String} id The id of the SDLC evaluation run to delete
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const deleteSdlcEvaluationRun = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.delete(`/api/v1/shield/sdlcevaluationruns`, {
+            headers: { authorization: token },
+            data: { id: id },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=sdlcEvaluationRuns.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/sdlcProfiles.js
+
+/**
+ * Create SDLC profile and set information
+ * @param {Object} data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createSdlcProfile = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.put("/api/v1/shield/sdlcprofiles", { data: data }, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete SDLC profile
+ * @param {String} id The id of the SDLC profile to be deleted
+ * @param {String} comments The comments included with the deletion
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const deleteSdlcProfile = (id, comments, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {
+            id: id,
+        };
+        if (comments)
+            data.comments = comments;
+        const request = client.delete(`/api/v1/shield/sdlcprofiles/`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Discard the SDLC profile draft changes
+ * @param {String} id The id of the SDLC profile to be discarded
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const discardSdlcProfileChanges = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        const request = client.get(`/api/v1/shield/sdlcprofiles/discard/${id}`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get SDLC profile information
+ * @param {String} id The id of the SDLC profile
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getSdlcProfileInformationById = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.get(`/api/v1/shield/sdlcprofiles/${id}`, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get SDLC profile list
+ * @param {Array<String>} filter The filter used to select the SDLC profile
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted If true it will return deleted records as well
+ * @param {Boolean} namesOnly Return only the names of the SDLC profiles
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getSdlcProfileList = (filter, version, includeDeleted, namesOnly, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            includeDeleted: includeDeleted,
+            namesOnly: namesOnly,
+            version: version,
+            filter: filter,
+        };
+        if (filter)
+            requestData.filter = filter;
+        const confirmationRequest = client.post(`/api/v1/shield/sdlcprofiles`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Publish SDLC profile
+ * @param {String} id The id of the SDLC profile to be published
+ * @param {String} comments The comments to be include with the request
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const publishSdlcProfile = (id, comments, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        if (comments)
+            data.comments = comments;
+        const confirmationRequest = client.post(`/api/v1/shield/sdlcprofiles/publish/${id}`, data, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Set SDLC profile information
+ * @param {String} id The id of the SDLC profile to be updated
+ * @param {Object} data Data used to update the SDLC profile
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setSdlcProfileInformation = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/sdlcprofiles/update`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=sdlcProfiles.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/security.js
 
 /**
  * Get the enabled authentication connections for current organization.
@@ -85074,7 +88036,7 @@ const synchronizeWithAuth0 = (authToken) => {
     });
 };
 //# sourceMappingURL=security.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/skill.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/skill.js
 
 /**
  * Create skill and set information
@@ -85084,7 +88046,7 @@ const synchronizeWithAuth0 = (authToken) => {
  */
 const createSkill = (data, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.put("/api/v1/skills", { data: data }, {
+        const confirmationRequest = client.put("/api/v1/exceed/skills", { data: data }, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85107,7 +88069,7 @@ const createSkillsFromTemplates = (templateIds, token) => {
         const requestData = {
             templateIds: templateIds,
         };
-        const confirmationRequest = client.put("/api/v1/skills/createfromtemplate/", requestData, {
+        const confirmationRequest = client.put("/api/v1/exceed/skills/createfromtemplate/", requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85133,7 +88095,7 @@ const deleteSkill = (id, comments, token) => {
         };
         if (comments)
             data.comments = comments;
-        const request = client.delete(`/api/v1/skills/`, {
+        const request = client.delete(`/api/v1/exceed/skills/`, {
             headers: { authorization: token },
             data: data,
         });
@@ -85155,7 +88117,7 @@ const deleteSkill = (id, comments, token) => {
 const discardSkillChanges = (id, token) => {
     return new Promise((resolve, reject) => {
         const data = {};
-        const request = client.get(`/api/v1/skills/discard/${id}`, {
+        const request = client.get(`/api/v1/exceed/skills/discard/${id}`, {
             headers: { authorization: token },
             data: data,
         });
@@ -85175,7 +88137,7 @@ const discardSkillChanges = (id, token) => {
  */
 const getImportedSkillTemplates = (token) => {
     return new Promise((resolve, reject) => {
-        const request = client.get(`/api/v1/skills/getimportedskilltemplates`, {
+        const request = client.get(`/api/v1/exceed/skills/getimportedskilltemplates`, {
             headers: { authorization: token },
         });
         request
@@ -85196,7 +88158,7 @@ const getImportedSkillTemplates = (token) => {
  */
 const getSkillRelatedRoles = (id, token, includeRoleInformation = false) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/skills/getskillrelatedroles/${id}/${includeRoleInformation}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/skills/getskillrelatedroles/${id}/${includeRoleInformation}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85216,7 +88178,7 @@ const getSkillRelatedRoles = (id, token, includeRoleInformation = false) => {
  */
 const getSkillRequiredAssessmentType = (id, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/skills/getrequiredassessmenttype/${id}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/skills/getrequiredassessmenttype/${id}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85238,7 +88200,7 @@ const getSkillRequiredAssessmentType = (id, token) => {
  */
 const getSkillInformationById = (id, version, returnNullIfVersionNotFound, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/skills/skill/${id}/${version}/${returnNullIfVersionNotFound}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/skills/skill/${id}/${version}/${returnNullIfVersionNotFound}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85271,7 +88233,7 @@ const getSkillList = (filter, version, includeDeleted, returnDefaultIfVersionNot
         };
         if (filter)
             requestData.filter = filter;
-        const confirmationRequest = client.post(`/api/v1/skills`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/skills`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85293,7 +88255,7 @@ const getSkillList = (filter, version, includeDeleted, returnDefaultIfVersionNot
  */
 const getTeamSkillsById = (teamId, maxDepth, returnNullIfVersionNotFound, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/skills/getteambyid/${teamId}/${maxDepth}/${returnNullIfVersionNotFound}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/skills/getteambyid/${teamId}/${maxDepth}/${returnNullIfVersionNotFound}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85313,7 +88275,7 @@ const getTeamSkillsById = (teamId, maxDepth, returnNullIfVersionNotFound, token)
  */
 const getCurrentUserTeamSkills = (maxDepth, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/skills/getcurrentuserteam/${maxDepth}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/skills/getcurrentuserteam/${maxDepth}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85333,7 +88295,7 @@ const getCurrentUserTeamSkills = (maxDepth, token) => {
  */
 const getSkillTemplateUpdates = (id, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/skills/getskilltemplateupdates/${id}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/skills/getskilltemplateupdates/${id}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85358,7 +88320,7 @@ const importSkillTemplates = (data, publish, token) => {
             data: data,
             publish: publish,
         };
-        const confirmationRequest = client.post(`/api/v1/skills/importtemplates`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/skills/importtemplates`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85382,7 +88344,7 @@ const publishSkill = (id, comments, token) => {
         const data = {};
         if (comments)
             data.comments = comments;
-        const confirmationRequest = client.post(`/api/v1/skills/publish/${id}`, data, {
+        const confirmationRequest = client.post(`/api/v1/exceed/skills/publish/${id}`, data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85407,7 +88369,7 @@ const setSkillInformation = (id, data, token) => {
             data: data,
             id: id,
         };
-        const confirmationRequest = client.post(`/api/v1/skills/update/`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/skills/update/`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85432,7 +88394,7 @@ const setSkillInformationFromTemplate = (id, data, token) => {
             data: data,
             id: id,
         };
-        const confirmationRequest = client.post(`/api/v1/skills/updatefromtemplate/`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/skills/updatefromtemplate/`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85455,7 +88417,7 @@ const validateSkill = (id, token) => {
         const requestData = {
             id: id,
         };
-        const confirmationRequest = client.post(`/api/v1/skills/validate/`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/skills/validate/`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85480,7 +88442,7 @@ const watchSkill = (id, watch, token) => {
             id: id,
             watch: watch,
         };
-        const confirmationRequest = client.post(`/api/v1/skills/watch`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/skills/watch`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85493,7 +88455,7 @@ const watchSkill = (id, watch, token) => {
     });
 };
 //# sourceMappingURL=skill.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/skillAssessments.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/skillAssessments.js
 
 /**
  * Add new entry skill assessment
@@ -85510,7 +88472,7 @@ const addEntry = (id, data, comments, token) => {
             data: data,
             id: id,
         };
-        const confirmationRequest = client.put("/api/v1/skillassessments/addentry", requestData, {
+        const confirmationRequest = client.put("/api/v1/exceed/skillassessments/addentry", requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85537,7 +88499,7 @@ const create = (data, comments, userId, token) => {
             data: data,
             userId: userId,
         };
-        const confirmationRequest = client.put("/api/v1/skillassessments/", requestData, {
+        const confirmationRequest = client.put("/api/v1/exceed/skillassessments/", requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85563,7 +88525,7 @@ const deleteSkillAssessment = (id, comments, token) => {
         };
         if (comments)
             data.comments = comments;
-        const request = client.delete(`/api/v1/skillassessments`, {
+        const request = client.delete(`/api/v1/exceed/skillassessments`, {
             headers: { authorization: token },
             data: data,
         });
@@ -85584,7 +88546,7 @@ const deleteSkillAssessment = (id, comments, token) => {
  */
 const getById = (id, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/skillassessments/${id}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/skillassessments/${id}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85605,7 +88567,7 @@ const getById = (id, token) => {
  */
 const getByUserAndSkill = (userId, skillId, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/skillassessments/getbyuserandskill/${userId}/${skillId}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/skillassessments/getbyuserandskill/${userId}/${skillId}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85628,7 +88590,7 @@ const getList = (userId, token) => {
         const requestData = {};
         if (userId)
             requestData.userId = userId;
-        const confirmationRequest = client.post(`/api/v1/skillassessments`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/skillassessments`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85641,7 +88603,7 @@ const getList = (userId, token) => {
     });
 };
 //# sourceMappingURL=skillAssessments.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/skillAssessmentTestingSession.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/skillAssessmentTestingSession.js
 
 /**
  * Add new entry skill assessment
@@ -85658,7 +88620,7 @@ const skillAssessmentTestingSession_addEntry = (id, data, comments, token) => {
             data: data,
             id: id,
         };
-        const confirmationRequest = client.put("/api/v1/skillassessments/addentry", requestData, {
+        const confirmationRequest = client.put("/api/v1/exceed/skillassessments/addentry", requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85685,7 +88647,7 @@ const skillAssessmentTestingSession_create = (data, comments, userId, token) => 
             data: data,
             userId: userId,
         };
-        const confirmationRequest = client.put("/api/v1/skillassessments/", requestData, {
+        const confirmationRequest = client.put("/api/v1/exceed/skillassessments/", requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85711,7 +88673,7 @@ const skillAssessmentTestingSession_deleteSkillAssessment = (id, comments, token
         };
         if (comments)
             data.comments = comments;
-        const request = client.delete(`/api/v1/skillassessments`, {
+        const request = client.delete(`/api/v1/exceed/skillassessments`, {
             headers: { authorization: token },
             data: data,
         });
@@ -85732,7 +88694,7 @@ const skillAssessmentTestingSession_deleteSkillAssessment = (id, comments, token
  */
 const endSession = (testingSessionId, token, keepPartial = false) => {
     return new Promise(function (resolve, reject) {
-        const confirmationRequest = client.post("/api/v1/skillassessmenttestingsession/endsession", { id: testingSessionId, keepPartial: keepPartial }, {
+        const confirmationRequest = client.post("/api/v1/exceed/skillassessmenttestingsession/endsession", { id: testingSessionId, keepPartial: keepPartial }, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85752,7 +88714,7 @@ const endSession = (testingSessionId, token, keepPartial = false) => {
  */
 const skillAssessmentTestingSession_getById = (id, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/skillassessments/${id}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/skillassessments/${id}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85773,7 +88735,7 @@ const skillAssessmentTestingSession_getById = (id, token) => {
  */
 const skillAssessmentTestingSession_getByUserAndSkill = (userId, skillId, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/skillassessments/getbyuserandskill/${userId}/${skillId}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/skillassessments/getbyuserandskill/${userId}/${skillId}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85796,7 +88758,7 @@ const skillAssessmentTestingSession_getList = (userId, token) => {
         const requestData = {};
         if (userId)
             requestData.userId = userId;
-        const confirmationRequest = client.post(`/api/v1/skillassessments`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/skillassessments`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85821,7 +88783,7 @@ const getNextStep = (testingSessionId, selectedAnswers, token) => {
         };
         if (selectedAnswers)
             data.selectedAnswers = selectedAnswers;
-        const confirmationRequest = client.post(`/api/v1/skillassessmenttestingsession/getnextstep`, data, {
+        const confirmationRequest = client.post(`/api/v1/exceed/skillassessmenttestingsession/getnextstep`, data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85842,7 +88804,7 @@ const getNextStep = (testingSessionId, selectedAnswers, token) => {
  */
 const getSkillTestAssessment = (userId, skillId, token) => {
     return new Promise(function (resolve, reject) {
-        const confirmationRequest = client.post(`/api/v1/skillassessmenttestingsession/getbyuserandskill`, {
+        const confirmationRequest = client.post(`/api/v1/exceed/skillassessmenttestingsession/getbyuserandskill`, {
             userId: userId,
             skillId: skillId,
         }, {
@@ -85865,7 +88827,7 @@ const getSkillTestAssessment = (userId, skillId, token) => {
  */
 const pause = (testingSessionId, token) => {
     return new Promise(function (resolve, reject) {
-        const confirmationRequest = client.post(`/api/v1/skillassessmenttestingsession/pausesession`, {
+        const confirmationRequest = client.post(`/api/v1/exceed/skillassessmenttestingsession/pausesession`, {
             id: testingSessionId,
         }, {
             headers: { authorization: token },
@@ -85887,7 +88849,7 @@ const pause = (testingSessionId, token) => {
  */
 const startSession = (skillId, saveSession, token) => {
     return new Promise(function (resolve, reject) {
-        const confirmationRequest = client.post("/api/v1/skillassessmenttestingsession/startsession", {
+        const confirmationRequest = client.post("/api/v1/exceed/skillassessmenttestingsession/startsession", {
             saveSession: saveSession,
             skillId: skillId,
         }, {
@@ -85903,7 +88865,7 @@ const startSession = (skillId, saveSession, token) => {
     });
 };
 //# sourceMappingURL=skillAssessmentTestingSession.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/skillTemplate.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/skillTemplate.js
 
 /**
  * Create skill template and set information
@@ -85916,7 +88878,7 @@ const createSkillTemplate = (data, token) => {
         const requestData = {
             data: data,
         };
-        const confirmationRequest = client.put("/api/v1/skilltemplates", requestData, {
+        const confirmationRequest = client.put("/api/v1/admin/skilltemplates", requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -85942,7 +88904,7 @@ const deleteSkillTemplate = (id, comments, token) => {
     if (comments)
         data.comments = comments;
     return new Promise((resolve, reject) => {
-        const request = client.delete(`/api/v1/skilltemplates/`, {
+        const request = client.delete(`/api/v1/admin/skilltemplates/`, {
             headers: { authorization: token },
             data: data,
         });
@@ -85964,7 +88926,7 @@ const deleteSkillTemplate = (id, comments, token) => {
 const discardSkillTemplateChanges = (id, token) => {
     return new Promise((resolve, reject) => {
         const data = {};
-        const request = client.get(`/api/v1/skilltemplates/discard/${id}`, {
+        const request = client.get(`/api/v1/admin/skilltemplates/discard/${id}`, {
             headers: { authorization: token },
             data: data,
         });
@@ -85987,7 +88949,7 @@ const discardSkillTemplateChanges = (id, token) => {
  */
 const getSkillTemplateInformationById = (id, version, returnNullIfVersionNotFound, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/skilltemplates/${id}/${version}/${returnNullIfVersionNotFound}`, {
+        const confirmationRequest = client.get(`/api/v1/admin/skilltemplates/${id}/${version}/${returnNullIfVersionNotFound}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86017,7 +88979,7 @@ const getSkillTemplateList = (filter, version, includeDeleted, namesOnly, token)
         };
         if (filter)
             requestData.filter = filter;
-        const confirmationRequest = client.post(`/api/v1/skilltemplates`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/admin/skilltemplates`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86036,7 +88998,7 @@ const getSkillTemplateList = (filter, version, includeDeleted, namesOnly, token)
  */
 const getTechnologyStacks = (token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/skilltemplates/stacks`, {
+        const confirmationRequest = client.get(`/api/v1/admin/skilltemplates/stacks`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86060,7 +89022,7 @@ const skillTemplate_publishTemplate = (id, comments, token) => {
         const data = {};
         if (comments)
             data.comments = comments;
-        const confirmationRequest = client.post(`/api/v1/skilltemplates/publish/${id}`, data, {
+        const confirmationRequest = client.post(`/api/v1/admin/skilltemplates/publish/${id}`, data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86085,7 +89047,7 @@ const skillTemplate_setTemplateInformation = (id, data, token) => {
             data: data,
             id: id,
         };
-        const confirmationRequest = client.post(`/api/v1/skilltemplates/update`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/admin/skilltemplates/update`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86110,7 +89072,7 @@ const skillTemplate_setTemplateTags = (id, tags, token) => {
             tags: tags,
             id: id,
         };
-        const confirmationRequest = client.post(`/api/v1/skilltemplates/updatetags/`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/admin/skilltemplates/updatetags/`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86133,7 +89095,7 @@ const validateTemplate = (id, token) => {
         const requestData = {
             id: id,
         };
-        const confirmationRequest = client.post(`/api/v1/skilltemplates/validate/`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/admin/skilltemplates/validate/`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86158,7 +89120,7 @@ const watchSkillTemplate = (id, watch, token) => {
             id: id,
             watch: watch,
         };
-        const confirmationRequest = client.post(`/api/v1/skilltemplates/watch`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/admin/skilltemplates/watch`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86171,88 +89133,17 @@ const watchSkillTemplate = (id, watch, token) => {
     });
 };
 //# sourceMappingURL=skillTemplate.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/talentTransfromation.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/standard.js
 
 /**
- * Get talent transformation steps for the current user
- * @param {String} authToken The authentication token
- * @returns {Promise<object>}
- */
-const getTalentTransformationStepsForCurrentUser = (authToken) => {
-    return new Promise((resolve, reject) => {
-        const request = client.get(`/api/v1/talenttransformation/getforcurrentuser`, authToken
-            ? {
-                headers: { authorization: authToken },
-            }
-            : {});
-        request
-            .then((response) => {
-            resolve(response.data);
-        })
-            .catch((error) => {
-            reject(error);
-        });
-    });
-};
-/**
- * Get the talent transformation summary for the whole organization
- * @param {String} authToken
- * @returns {Promise<object>} The talent transformation summary
- */
-const getTalentTransformationSummary = (authToken) => {
-    return new Promise((resolve, reject) => {
-        const request = client.get(`/api/v1/talenttransformation/summary`, authToken
-            ? {
-                headers: { authorization: authToken },
-            }
-            : {});
-        request
-            .then((response) => {
-            resolve(response.data);
-        })
-            .catch((error) => {
-            reject(error);
-        });
-    });
-};
-/**
- * Get the talent transformation summary for the team
- * @param {String} teamId
- * @param {String} authToken
- * @returns {Promise<object>} The talent transformation summary
- */
-const getTalentTransformationSummaryForTeam = (teamId, authToken) => {
-    return new Promise((resolve, reject) => {
-        const request = client.get(`/api/v1/talenttransformation/summaryforteam/${teamId}`, authToken
-            ? {
-                headers: { authorization: authToken },
-            }
-            : {});
-        request
-            .then((response) => {
-            resolve(response.data);
-        })
-            .catch((error) => {
-            reject(error);
-        });
-    });
-};
-/**
- * Set talent transformation step data
- * @param {String} id The id of the talent transformation step to be updated
- * @param {Object} data Data used to update the talent transformation step
- * @param {Boolean} returnAllStepsStatuses If true, return all steps statuses
+ * Create standard and set information
+ * @param {Object} data
  * @param {String} token Authorization token
  * @returns {Promise<object>}
  */
-const setTalentTransformationStepData = (id, data, returnAllStepsStatuses, token) => {
+const createStandard = (data, token) => {
     return new Promise((resolve, reject) => {
-        const requestData = {
-            data: data,
-            id: id,
-            returnAllStepsStatuses: returnAllStepsStatuses,
-        };
-        const confirmationRequest = client.post(`/api/v1/talenttransformation/setdata/`, requestData, {
+        const confirmationRequest = client.put("/api/v1/shield/standards", { data: data }, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86264,8 +89155,709 @@ const setTalentTransformationStepData = (id, data, returnAllStepsStatuses, token
         });
     });
 };
-//# sourceMappingURL=talentTransfromation.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/teams.js
+/**
+ * Create standards from templates
+ * @param {Array<String>} templateIds
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createStandardsFromTemplates = (templateIds, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            templateIds: templateIds,
+        };
+        const confirmationRequest = client.put("/api/v1/shield/standards/createfromtemplate/", requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete standard
+ * @param {String} id The id of the standard to be deleted
+ * @param {String} comments The comments included with the deletion
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const deleteStandard = (id, comments, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {
+            id: id,
+        };
+        if (comments)
+            data.comments = comments;
+        const request = client.delete(`/api/v1/shield/standards/`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Discard the standard draft changes
+ * @param {String} id The id of the standard to be discarded
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const discardStandardChanges = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        const request = client.get(`/api/v1/shield/standards/discard/${id}`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get standard information
+ * @param {String} id The id of the standard
+ * @param {String} version The version of the standard
+ * @param {Boolean} returnNullIfVersionNotFound When true it will return null if the version is not found
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getStandardInformationById = (id, version, returnNullIfVersionNotFound, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.get(`/api/v1/shield/standards/${id}/${version}/${returnNullIfVersionNotFound}`, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get standard list
+ * @param {Array<String>} filter The filter used to select the standard
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted If true it will return deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getStandardList = (filter, version, includeDeleted, returnDefaultIfVersionNotAvailable, details, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            includeDeleted: includeDeleted,
+            details: details,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+            version: version,
+            filter: filter,
+        };
+        if (filter)
+            requestData.filter = filter;
+        const confirmationRequest = client.post(`/api/v1/shield/standards`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Publish standard
+ * @param {String} id The id of the standard to be published
+ * @param {String} comments The comments to be include with the request
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const publishStandard = (id, comments, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        if (comments)
+            data.comments = comments;
+        const confirmationRequest = client.post(`/api/v1/shield/standards/publish/${id}`, data, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Set standard information
+ * @param {String} id The id of the standard to be updated
+ * @param {Object} data Data used to update the standard
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setStandardInformation = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/standards/update`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Set the standard information from template
+ * @param {String} id The id of the standard to be updated
+ * @param {Object} data Data used to update the standard
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setStandardInformationFromTemplate = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/standards/updatefromtemplate/`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Watch standard
+ * @param {String} id The id of the standard to be updated
+ * @param {Boolean} watch Set to true or false
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const watchStandard = (id, watch, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            id: id,
+            watch: watch,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/standards/watch`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the standard related policies
+ * @param {String} id The standard id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getStandardRelatedPolicies = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/standards/policies/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the standard related requirements
+ * @param {String} id The standard id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getStandardRequirements = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/standards/requirements/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the standard related controls
+ * @param {String} id The standard id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getStandardControls = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/shield/standards/controls/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=standard.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/standardTemplate.js
+
+/**
+ * Create standard template and set information
+ * @param {Object} data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createStandardTemplate = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+        };
+        const confirmationRequest = client.put("/api/v1/admin/standardtemplates", requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete standard template
+ * @param {number} id The id of the template to be deleted
+ * @param {String} comments The comments included with the deletion
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const deleteStandardTemplate = (id, comments, token) => {
+    const data = {
+        id: id,
+    };
+    if (comments)
+        data.comments = comments;
+    return new Promise((resolve, reject) => {
+        const request = client.delete(`/api/v1/admin/standardtemplates/`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Discard the standard template draft changes
+ * @param {String} id The id of the standard template to be discarded
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const discardStandardTemplateChanges = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        const request = client.get(`/api/v1/admin/standardtemplates/discard/${id}`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get standard template information
+ * @param {String} id The id of the template
+ * @param {String} version The version of the template
+ * @param {Boolean} returnNullIfVersionNotFound When true it will return null if the version is not found
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getStandardTemplateInformationById = (id, version, returnNullIfVersionNotFound, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.get(`/api/v1/admin/standardtemplates/${id}/${version}/${returnNullIfVersionNotFound}`, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get standard template list
+ * @param {Array<String>} filter The filter used to select the template
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getStandardTemplateList = (filter, version, includeDeleted, details, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            includeDeleted: includeDeleted,
+            details: details,
+            version: version,
+        };
+        if (filter)
+            requestData.filter = filter;
+        const confirmationRequest = client.post(`/api/v1/admin/standardtemplates`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Publish standard template
+ * @param {number} id The id of the template to be published
+ * @param {String} comments The comments to be include with the request
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const publishStandardTemplate = (id, comments, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {};
+        if (comments)
+            data.comments = comments;
+        const confirmationRequest = client.post(`/api/v1/admin/standardtemplates/publish/${id}`, data, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Set standard template information
+ * @param {String} id The id of the template to be updated
+ * @param {Object} data Data used to update the template
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setStandardTemplateInformation = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/standardtemplates/update`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Update the standard template tags
+ * @param {String} id The id of the template to be updated
+ * @param {Object} tags Updated template tags
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setStandardTemplateTags = (id, tags, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            tags: tags,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/standardtemplates/updatetags`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the standard template related policy templates
+ * @param {String} id The standard template id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getStandardTemplateRelatedPolicyTemplates = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/standardtemplates/policytemplates/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the standard template related requirement templates
+ * @param {String} id The standard template id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getStandardTemplateRelatedRequirementTemplates = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/standardtemplates/requirementtemplates/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the standard template related control templates
+ * @param {String} id The standard template id
+ * @param {String} details The level of detail to return ("ID", "NAME", "DEFAULT")
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {Boolean} returnDefaultIfVersionNotAvailable Return the default version if published not available
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getStandardTemplateRelatedControlTemplates = (id, details, version, includeDeleted, returnDefaultIfVersionNotAvailable, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            details: details,
+            version: version,
+            includeDeleted: includeDeleted,
+            returnDefaultIfVersionNotAvailable: returnDefaultIfVersionNotAvailable,
+        };
+        const confirmationRequest = client.post(`/api/v1/admin/standardtemplates/controltemplates/${id}`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=standardTemplate.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/onboarding.js
+
+/**
+ * Get onboarding steps for the current user
+ * @param {String} authToken The authentication token
+ * @returns {Promise<object>}
+ */
+const getOnboardingStepsForCurrentUser = (authToken) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/exceed/onboarding/getforcurrentuser`, authToken
+            ? {
+                headers: { authorization: authToken },
+            }
+            : {});
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the onboarding summary for the whole organization
+ * @param {String} authToken
+ * @returns {Promise<object>} The onboarding summary
+ */
+const getOnboardingSummary = (authToken) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/exceed/onboarding/summary`, authToken
+            ? {
+                headers: { authorization: authToken },
+            }
+            : {});
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the onboarding summary for the team
+ * @param {String} teamId
+ * @param {String} authToken
+ * @returns {Promise<object>} The onboarding summary
+ */
+const getOnboardingSummaryForTeam = (teamId, authToken) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/exceed/onboarding/summaryforteam/${teamId}`, authToken
+            ? {
+                headers: { authorization: authToken },
+            }
+            : {});
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Set onboarding step data
+ * @param {String} id The id of the onboarding step to be updated
+ * @param {Object} data Data used to update the onboarding step
+ * @param {Boolean} returnAllStepsStatuses If true, return all steps statuses
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setOnboardingStepData = (id, data, returnAllStepsStatuses, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            id: id,
+            returnAllStepsStatuses: returnAllStepsStatuses,
+        };
+        const confirmationRequest = client.post(`/api/v1/exceed/onboarding/setdata/`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=onboarding.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/teams.js
 
 /**
  * Add users to team
@@ -86524,7 +90116,7 @@ const updateTeam = (teamId, data, authToken) => {
     });
 };
 //# sourceMappingURL=teams.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/tenants.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/tenants.js
 
 /**
  * Get tenant information
@@ -86543,6 +90135,30 @@ const getTenantInformation = (category, token) => {
         request
             .then((response) => {
             resolve(response.data ? response.data : null);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get the applications the tenant itself is licensed for. Returns
+ * `tenant.applications` unioned with the always-included apps (CORE) —
+ * independent of which apps the current user is entitled to via their
+ * groups. Use this for admin UIs that need to show "your organization is
+ * entitled to X, Y, Z". For user-level entitlement (e.g. rendering the app
+ * switcher) use `getUserApplications` instead.
+ * @param token Authorization token
+ * @returns {Promise<{ applications: string[] }>}
+ */
+const getTenantApplications = (token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get("/api/v1/tenants/tenant/applications", {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data ? response.data : { applications: [] });
         })
             .catch((error) => {
             reject(error);
@@ -86592,7 +90208,9 @@ const setTenantInformation = (category, data, token) => {
     });
 };
 //# sourceMappingURL=tenants.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/trainingPlans.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/trainingPlans.js
+
+
 
 /**
  * Archive the training plan
@@ -86601,7 +90219,7 @@ const setTenantInformation = (category, data, token) => {
  */
 const archiveTrainingPlan = (id, token) => {
     return new Promise((resolve, reject) => {
-        const request = client.get(`/api/v1/trainingplans/archive/${id}`, {
+        const request = client.get(`/api/v1/exceed/trainingplans/archive/${id}`, {
             headers: { authorization: token },
         });
         request
@@ -86623,7 +90241,7 @@ const archiveTrainingPlan = (id, token) => {
 const createTrainingPlan = (data, type, saveAsDraft, token) => {
     return new Promise((resolve, reject) => {
         const requestData = { data: data, type: type, saveAsDraft: saveAsDraft };
-        const confirmationRequest = client.put("/api/v1/trainingplans", requestData, {
+        const confirmationRequest = client.put("/api/v1/exceed/trainingplans", requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86648,7 +90266,7 @@ const deleteTrainingPlan = (id, comments, token) => {
         };
         if (comments)
             data.comments = comments;
-        const request = client.delete(`/api/v1/trainingplans/`, {
+        const request = client.delete(`/api/v1/exceed/trainingplans/`, {
             headers: { authorization: token },
             data: data,
         });
@@ -86668,7 +90286,7 @@ const deleteTrainingPlan = (id, comments, token) => {
  */
 const discardTrainingPlanChanges = (id, token) => {
     return new Promise((resolve, reject) => {
-        const request = client.get(`/api/v1/trainingplans/discard/${id}`, {
+        const request = client.get(`/api/v1/exceed/trainingplans/discard/${id}`, {
             headers: { authorization: token },
         });
         request
@@ -86681,14 +90299,18 @@ const discardTrainingPlanChanges = (id, token) => {
     });
 };
 /**
- * Create a new baseline
+ * Create a new baseline over a websocket so progress can be streamed back to
+ * the caller. The server emits 0–95% during generation (per-recipient fan-out
+ * dominates) and 100% on completion.
  * @param {String} id The Id of the plan for which a new baseline is to be generated
  * @param {Object} data The data
  * @param {Boolean} returnMinimized If set to true just high level plan baseline information will be returned
  * @param {Boolean} saveBaseline If set to true it will save the baseline
  * @param {String} token Authorization token
+ * @param {Function} onProgressStatus Optional callback for progress updates
+ * @returns {Promise<object>} Resolves with the generated plan version
  */
-const generateNewBaseline = (id, data, returnMinimized, saveBaseline, token) => {
+const generateNewBaseline = (id, data, returnMinimized, saveBaseline, token, onProgressStatus) => {
     return new Promise((resolve, reject) => {
         const requestData = {
             data: data,
@@ -86697,15 +90319,37 @@ const generateNewBaseline = (id, data, returnMinimized, saveBaseline, token) => 
         };
         if (id)
             requestData.id = id;
-        const confirmationRequest = client.post("/api/v1/trainingplans/generatenewbaseline", requestData, {
-            headers: { authorization: token },
+        // Use socket.io for real-time progress updates
+        const socket = io(getBaseUrl(), {
+            auth: {
+                token: token,
+            },
+            path: `/api/v1/realtime`,
+            transports: ["websocket"],
+            withCredentials: true,
+            reconnection: false,
         });
-        confirmationRequest
-            .then((response) => {
-            resolve(response.data);
-        })
-            .catch((error) => {
-            reject(error);
+        // Socket event handlers
+        socket.on("connect", () => {
+            socket.emit("generatenewprojectbaseline", requestData);
+        });
+        socket.on("progress", (progress) => {
+            if (onProgressStatus) {
+                onProgressStatus(progress);
+            }
+        });
+        socket.on("complete", (result) => {
+            socket.disconnect();
+            resolve(result);
+        });
+        socket.on("error", (err) => {
+            socket.disconnect();
+            reject(err);
+        });
+        socket.on("disconnect", (reason) => {
+            if (reason !== "io client disconnect") {
+                reject(new Error(`Socket disconnected: ${reason}`));
+            }
         });
     });
 };
@@ -86717,7 +90361,7 @@ const generateNewBaseline = (id, data, returnMinimized, saveBaseline, token) => 
  */
 const getTrainingPlanById = (id, version, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/trainingplans/${id}/${version}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/trainingplans/${id}/${version}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86735,7 +90379,7 @@ const getTrainingPlanById = (id, version, token) => {
  */
 const getAllTrainingPlansTasksSummary = (token = null) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/trainingplans/taskssummary`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/trainingplans/taskssummary`, {
             headers: token ? { authorization: token } : {},
         });
         confirmationRequest
@@ -86772,7 +90416,7 @@ const getListOfTrainingPlans = (users, types, version, fields, includeDeleted, i
             requestData.types = types;
         if (users)
             requestData.users = users;
-        const confirmationRequest = client.post(`/api/v1/trainingplans`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/trainingplans`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86795,7 +90439,7 @@ const publishTrainingPlan = (id, comments, token) => {
         const data = {};
         if (comments)
             data.comments = comments;
-        const confirmationRequest = client.post(`/api/v1/trainingplans/publish/${id}`, data, {
+        const confirmationRequest = client.post(`/api/v1/exceed/trainingplans/publish/${id}`, data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86821,7 +90465,7 @@ const updateTrainingPlan = (planId, data, saveAsDraft, token) => {
             id: planId,
             saveAsDraft,
         };
-        const confirmationRequest = client.put(`/api/v1/trainingplans/update/${planId}`, requestData, {
+        const confirmationRequest = client.put(`/api/v1/exceed/trainingplans/update/${planId}`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86846,7 +90490,7 @@ const updateTrainingPlanTaskStatus = (id, status, token) => {
             id: id,
             status: status,
         };
-        const confirmationRequest = client.post(`/api/v1/trainingplans/task`, data, {
+        const confirmationRequest = client.post(`/api/v1/exceed/trainingplans/task`, data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86867,7 +90511,7 @@ const updateTrainingPlanTaskStatus = (id, status, token) => {
  */
 const updateActivities = (planId, data, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.post(`/api/v1/trainingplans/${planId}/activities`, data, {
+        const confirmationRequest = client.post(`/api/v1/exceed/trainingplans/${planId}/activities`, data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86880,7 +90524,7 @@ const updateActivities = (planId, data, token) => {
     });
 };
 //# sourceMappingURL=trainingPlans.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/trainingPlansProficiencyLevels.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/trainingPlansProficiencyLevels.js
 
 /**
  * Get training plan proficiency level
@@ -86890,7 +90534,7 @@ const updateActivities = (planId, data, token) => {
  */
 const getTrainingPlanProficiencyLevel = (proficiencyLevelId, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/trainingplans/proficiencylevels/${proficiencyLevelId}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/trainingplans/proficiencylevels/${proficiencyLevelId}`, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86917,7 +90561,7 @@ const getTrainingPlanProficiencyLevelList = (includeDeleted, includeDetailedInfo
             includeDeleted: includeDeleted,
             includeDetailedInformation: includeDetailedInformation,
         };
-        const confirmationRequest = client.post(`/api/v1/trainingplans/proficiencylevels`, requestData, {
+        const confirmationRequest = client.post(`/api/v1/exceed/trainingplans/proficiencylevels`, requestData, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86937,7 +90581,7 @@ const getTrainingPlanProficiencyLevelList = (includeDeleted, includeDetailedInfo
  */
 const reorderTrainingPlansProficiencyLevels = (order, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.post(`/api/v1/trainingplans/proficiencylevels/reorder`, { order: order }, {
+        const confirmationRequest = client.post(`/api/v1/exceed/trainingplans/proficiencylevels/reorder`, { order: order }, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86958,7 +90602,7 @@ const reorderTrainingPlansProficiencyLevels = (order, token) => {
  */
 const updateTrainingPlanProficiencyLevel = (proficiencyLevelId, data, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.post(`/api/v1/trainingplans/proficiencylevel/${proficiencyLevelId}`, data, {
+        const confirmationRequest = client.post(`/api/v1/exceed/trainingplans/proficiencylevel/${proficiencyLevelId}`, data, {
             headers: { authorization: token },
         });
         confirmationRequest
@@ -86971,7 +90615,7 @@ const updateTrainingPlanProficiencyLevel = (proficiencyLevelId, data, token) => 
     });
 };
 //# sourceMappingURL=trainingPlansProficiencyLevels.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/userInformation.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/userInformation.js
 
 /**
  * Add an entry to an array type business property such as experience, education or certifications
@@ -87047,8 +90691,30 @@ const updateEntryfromArrayBusinessProperty = (userId, property, id, data, token)
     });
 };
 //# sourceMappingURL=userInformation.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/users.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/users.js
 
+/**
+ * Get the applications the requesting user is entitled to. Returns the
+ * intersection of the tenant's licensed applications and the user's group
+ * grants, unioned with the always-included apps (CORE). Used to render the
+ * app switcher and to gate UI features on app entitlement client-side.
+ * @param token Authorization token
+ * @returns {Promise<{ applications: string[] }>}
+ */
+const getUserApplications = (token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get("/api/v1/users/applications", {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data ? response.data : { applications: [] });
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
 /**
  * Add a new API Token
  * @param {string} name Name of the token
@@ -87711,7 +91377,23 @@ const validateResetPasswordCode = (email, code) => {
     });
 };
 //# sourceMappingURL=users.js.map
-;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/index.js
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/index.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
