@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 import { readFile } from "node:fs/promises";
-import { resolve, dirname } from "node:path";
+import { resolve, dirname, basename } from "node:path";
 import yaml from "js-yaml";
 import { integration, client } from "@stackfactor/client-api";
 
@@ -253,8 +253,8 @@ async function buildPayload(config, configDir) {
   };
 
   // Add repository files (array of { path, code })
+  payload.repository = [];
   if (Array.isArray(config.repository)) {
-    payload.repository = [];
     for (const repoPath of config.repository) {
       const absPath = resolve(configDir, repoPath);
       let code;
@@ -270,6 +270,35 @@ async function buildPayload(config, configDir) {
         `Included file in payload: ${repoPath} (${code.length} bytes)`,
       );
     }
+  }
+
+  // Always include the dependency manifest + lockfile from the repo root, so the
+  // Cloud Run build/deploy pipeline has the agent's npm dependencies and a
+  // reproducible lockfile — regardless of whether config.yaml lists them. These
+  // are read from the workspace root (npm's working dir), not configDir, which
+  // may be nested (e.g. src/config.yaml). package.json is required; the lockfile
+  // is strongly recommended but only warned about so existing agents don't break.
+  const workspaceRoot = process.env.GITHUB_WORKSPACE || process.cwd();
+  for (const manifest of ["package.json", "package-lock.json"]) {
+    if (payload.repository.some((file) => basename(file.path) === manifest)) {
+      continue; // already provided via config.yaml repository
+    }
+    let code;
+    try {
+      code = await readFile(resolve(workspaceRoot, manifest), "utf-8");
+    } catch (err) {
+      if (manifest === "package.json") {
+        throw new Error(
+          `package.json is required at the repo root for deployment but could not be read: ${err.message}`,
+        );
+      }
+      core.warning(
+        `No ${manifest} at the repo root — agent builds will not be reproducible. Commit a lockfile.`,
+      );
+      continue;
+    }
+    payload.repository.push({ path: manifest, code });
+    core.info(`Included manifest in payload: ${manifest} (${code.length} bytes)`);
   }
 
   return payload;
