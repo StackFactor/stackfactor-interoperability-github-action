@@ -77831,7 +77831,9 @@ const APPS = {
 const PERMISSIONS = {
     ACCESS_TO_CONTENT_GENERATORS: "651d81d626fb9aafa4077520",
     ADMIN_AUTHOR_CONTENT: "5ea3d1152839450e16e72bba",
+    ADMIN_AUTHOR_BILLING_PROFILES: "6b0c9af1226ef27a8f5d1001",
     ADMIN_PROMOTE_CONTENT: "5ea3d10bea252025c8ec351b",
+    ADMIN_PUBLISH_BILLING_PROFILES: "6b0c9af1226ef27a8f5d1002",
     ADMIN_MANAGE_CONTENT_PROVIDERS: "61970935cee185acf08111f6",
     AUTHOR_CONTENT: "5fac210560e43de7c6b4a208",
     MANAGE_BILLING: "5e1570cd03f676213bfdcd08",
@@ -77852,28 +77854,88 @@ const PERMISSIONS = {
     PROMOTE_CONTENT: "5fac2126427ce31f8a92c0cb",
     TALENT_TRANSFORMATION_CHAMPION: "5fac210f7e6539d37a897c95",
 };
+/**
+ * Quota units used by billing profile quota entries.
+ */
+const quotaUnits = {
+    TENANT: "TENANT",
+    USER: "USER",
+};
+/**
+ * Quota types available in billing profile configuration.
+ */
+const quotaTypes = {
+    GENERATE_SKILLS: {
+        type: "GENERATE_SKILLS",
+        quotaUnits: quotaUnits.TENANT,
+        description: "Number of skills generated",
+    },
+    GENERATE_POLICIES: {
+        type: "GENERATE_POLICIES",
+        quotaUnits: quotaUnits.TENANT,
+        description: "Number of policies generated",
+    },
+    GENERATE_ROLES: {
+        type: "GENERATE_ROLES",
+        quotaUnits: quotaUnits.TENANT,
+        description: "Number of roles generated",
+    },
+    GENERATE_STANDARDS: {
+        type: "GENERATE_STANDARDS",
+        quotaUnits: quotaUnits.TENANT,
+        description: "Number of standards generated",
+    },
+    GENERATE_LEARNING_CONTENT: {
+        type: "GENERATE_LEARNING_CONTENT",
+        quotaUnits: quotaUnits.TENANT,
+        description: "Number of learning content items generated",
+    },
+    AI_CREDITS: {
+        type: "AI_CREDITS",
+        quotaUnits: quotaUnits.TENANT,
+        description: "Number of AI credits available",
+    },
+    ASSISTANT_QUESTIONS: {
+        type: "ASSISTANT_QUESTIONS",
+        quotaUnits: quotaUnits.USER,
+        description: "Number of assistant questions allowed",
+    },
+    ASSISTANT_CALL_MINUTES: {
+        type: "ASSISTANT_CALL_MINUTES",
+        quotaUnits: quotaUnits.USER,
+        description: "Number of assistant call minutes allowed",
+    },
+    MAX_USERS: {
+        type: "MAX_USERS",
+        quotaUnits: quotaUnits.TENANT,
+        description: "Maximum number of users allowed",
+    },
+};
 const PERMISSION_DESCRIPTIONS = {
-    "651d81d626fb9aafa4077520": "Access to AI",
-    "5ea3d1152839450e16e72bba": "Author content",
-    "5ea3d10bea252025c8ec351b": "Promote content",
-    "61970935cee185acf08111f6": "Manage content providers",
-    "5fac210560e43de7c6b4a208": "Author content",
-    "5e1570cd03f676213bfdcd08": "Manage billing",
-    "5f0fa12f16a720fde58ea820": "Manage content providers",
-    "5fac2111b7e49e10c779b4a5": "Manage executive",
-    "5dd612fe59e518ac87b8cf8e": "Manage groups",
-    "64f54d20b7e49e10c779b4a6": "Manage learning content",
-    "5dd61305a73c68b44c3f0827": "Manage learning paths",
-    "5dd612d5338ea9a6ae6326da": "Manage organization information",
-    "5fac210e7e6539d37a897c94": "Auto approve own profile information updates",
-    "650fadb23956a2154ac890ac": "Skip assessment when updating own profile information",
-    "5fac21164351c6727a34cd4e": "Auto approve own skill set updates",
-    "66ff566a911d938bc00618bf": "Manage security",
-    "5e1570e087d836dc77888a5f": "Manage settings",
-    "5fac211e6c8f874bd7137b98": "Auto approve own team information updates",
-    "5dd61314afc2455a89b1a37b": "Manage teams",
-    "5dd612e40f0bc559c41a2b29": "Manage users",
-    "5fac2126427ce31f8a92c0cb": "Promote content",
+    [PERMISSIONS.ACCESS_TO_CONTENT_GENERATORS]: "Access to AI",
+    [PERMISSIONS.ADMIN_AUTHOR_BILLING_PROFILES]: "Author billing profiles",
+    [PERMISSIONS.ADMIN_PUBLISH_BILLING_PROFILES]: "Publish billing profiles",
+    [PERMISSIONS.ADMIN_AUTHOR_CONTENT]: "Author content",
+    [PERMISSIONS.ADMIN_PROMOTE_CONTENT]: "Promote content",
+    [PERMISSIONS.ADMIN_MANAGE_CONTENT_PROVIDERS]: "Manage content providers",
+    [PERMISSIONS.AUTHOR_CONTENT]: "Author content",
+    [PERMISSIONS.MANAGE_BILLING]: "Manage billing",
+    [PERMISSIONS.MANAGE_CONTENT_PROVIDERS]: "Manage content providers",
+    [PERMISSIONS.MANAGE_EXECUTIVE]: "Manage executive",
+    [PERMISSIONS.MANAGE_GROUPS]: "Manage groups",
+    [PERMISSIONS.MANAGE_LEARNING_CONTENT]: "Manage learning content",
+    [PERMISSIONS.MANAGE_LEARNING_PATHS]: "Manage learning paths",
+    [PERMISSIONS.MANAGE_ORGANIZATION_INFORMATION]: "Manage organization information",
+    [PERMISSIONS.MANAGE_OWN_PROFILE_INFORMATION_AUTO_APP]: "Auto approve own profile information updates",
+    [PERMISSIONS.MANAGE_OWN_PROFILE_SKIP_ASSESSMENT]: "Skip assessment when updating own profile information",
+    [PERMISSIONS.MANAGE_OWN_SKILL_SET_AUTO_APPROVE]: "Auto approve own skill set updates",
+    [PERMISSIONS.MANAGE_SECURITY]: "Manage security",
+    [PERMISSIONS.MANAGE_SETTINGS]: "Manage settings",
+    [PERMISSIONS.MANAGE_TEAM_INFORMATION_AUTO_APPROVE]: "Auto approve own team information updates",
+    [PERMISSIONS.MANAGE_TEAMS]: "Manage teams",
+    [PERMISSIONS.MANAGE_USERS]: "Manage users",
+    [PERMISSIONS.PROMOTE_CONTENT]: "Promote content",
+    [PERMISSIONS.TALENT_TRANSFORMATION_CHAMPION]: "Talent transformation champion",
 };
 //# sourceMappingURL=constants.js.map
 // EXTERNAL MODULE: ./node_modules/dotenv/lib/main.js
@@ -78317,6 +78379,195 @@ const deleteArtifactCatalog = (id, token) => {
     });
 };
 //# sourceMappingURL=artifactCatalog.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/billingProfiles.js
+
+/**
+ * Create billing profile
+ * @param {Object} data
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const createBillingProfile = (data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+        };
+        const confirmationRequest = client.put("/api/v1/billingprofiles", requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get list of billing profiles
+ * @param {Array<String>} filter The filter used to select billing profiles
+ * @param {String} version The version to be retrieved
+ * @param {Boolean} includeDeleted When true it will return the deleted records as well
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getBillingProfileList = (filter, version, includeDeleted, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            includeDeleted: includeDeleted,
+            version: version,
+        };
+        if (filter)
+            requestData.filter = filter;
+        const confirmationRequest = client.post(`/api/v1/billingprofiles`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get billing profile information by ID
+ * @param {String} id The id of the billing profile
+ * @param {String} version The version of the billing profile
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const getBillingProfileInformationById = (id, version, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.get(`/api/v1/billingprofiles/${id}/${version}`, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Update billing profile
+ * @param {String} id The id of the billing profile to be updated
+ * @param {Object} data Data used to update the billing profile
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const setBillingProfileInformation = (id, data, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            data: data,
+            id: id,
+        };
+        const confirmationRequest = client.post(`/api/v1/billingprofiles/update`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Delete billing profile
+ * @param {String} id The id of the billing profile to be deleted
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const deleteBillingProfile = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const data = {
+            id: id,
+        };
+        const request = client.delete(`/api/v1/billingprofiles/`, {
+            headers: { authorization: token },
+            data: data,
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Publish billing profile
+ * @param {String} id The id of the billing profile to be published
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const publishBillingProfile = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = client.post(`/api/v1/billingprofiles/publish/${id}`, {}, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Discard billing profile draft changes
+ * @param {String} id The id of the billing profile to be discarded
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const discardBillingProfileChanges = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/billingprofiles/discard/${id}`, {
+            headers: { authorization: token },
+        });
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Watch billing profile
+ * @param {String} id The id of the billing profile to be watched/unwatched
+ * @param {Boolean} watch Set to true or false
+ * @param {String} token Authorization token
+ * @returns {Promise<object>}
+ */
+const watchBillingProfile = (id, watch, token) => {
+    return new Promise((resolve, reject) => {
+        const requestData = {
+            id: id,
+            watch: watch,
+        };
+        const confirmationRequest = client.post(`/api/v1/billingprofiles/watch`, requestData, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=billingProfiles.js.map
 ;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/avatar.js
 
 /**
@@ -83912,6 +84163,46 @@ const setDefaultIntegration = (id, token) => {
         });
     });
 };
+/**
+ * Get an integration agent's live health (cheap: deploy state + Cloud Run
+ * readiness; does not contact the agent). Use for the live status on the cards.
+ * @param {String} id The id of the integration
+ * @param {String} token Authorization token
+ */
+const getIntegrationHealth = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = axiosClient_client.get(`/api/v1/integrations/healthcheck/${id}`, {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Actively test an integration agent end-to-end (mints the ID token and probes
+ * the agent). Cold-starts the agent, so trigger it from an explicit "Test".
+ * @param {String} id The id of the integration
+ * @param {String} token Authorization token
+ */
+const testIntegrationHealth = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const confirmationRequest = axiosClient_client.post(`/api/v1/integrations/healthcheck/${id}/test`, "", {
+            headers: { authorization: token },
+        });
+        confirmationRequest
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
 //# sourceMappingURL=integration.js.map
 ;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/integrationConfiguration.js
 
@@ -84482,6 +84773,7 @@ const updateLabSession = (id, data, token) => {
 
 
 
+
 /**
  * Create learning content and set information
  * @param {Object} data Learning content data
@@ -84587,8 +84879,10 @@ const discardLearningContentChanges = (id, token) => {
  * @param {String} integrationId
  * @param {String} contentType
  * @param {String} token
+ * @param {Function} onProgressStatus Optional callback for progress updates
+ * @param {Object} previousElementUsage Optional frequency map of element types already used across existing videos (video generation only)
  */
-const generateLearningActivityContent = (learningObjectives, skillId, microSkillId, learningActivity, otherLearningActivities, integrationId, contentType, token, onProgressStatus) => {
+const generateLearningActivityContent = (learningObjectives, skillId, microSkillId, learningActivity, otherLearningActivities, integrationId, contentType, token, onProgressStatus, previousElementUsage) => {
     return new Promise((resolve, reject) => {
         const requestData = {
             learningObjectives: learningObjectives,
@@ -84600,6 +84894,9 @@ const generateLearningActivityContent = (learningObjectives, skillId, microSkill
         };
         if (otherLearningActivities) {
             requestData.otherLearningActivities = otherLearningActivities;
+        }
+        if (previousElementUsage) {
+            requestData.previousElementUsage = previousElementUsage;
         }
         // Use socket.io for real-time progress updates
         const socket = io(getBaseUrl(), {
@@ -84757,17 +85054,18 @@ const getLearningContentMicroSkillLearningContentActivitySceneAudio = (contentId
     });
 };
 /**
- * Upload media for a specific micro skill learning content activity
+ * Get media for a specific micro skill learning content activity
  * @param {String} id
  * @param {String} microskillid
  * @param {String} activityId
  * @param {String} mediaId
+ * @param {String} version The content version (mandatory)
  * @param {String} token
  * @returns {Promise<object>} The response from the server
  */
-const getLearningContentMicroSkillLearningContentActivityMedia = (id, microskillid, activityId, mediaId, token) => {
+const getLearningContentMicroSkillLearningContentActivityMedia = (id, microskillid, activityId, mediaId, version, token) => {
     return new Promise((resolve, reject) => {
-        const confirmationRequest = client.get(`/api/v1/exceed/learningcontent/media/${id}/${microskillid}/${activityId}/${mediaId}`, {
+        const confirmationRequest = client.get(`/api/v1/exceed/learningcontent/media/${id}/${microskillid}/${activityId}/${mediaId}/${version}`, {
             headers: {
                 authorization: token,
             },
@@ -85411,6 +85709,27 @@ const getListByElementId = (elementId, page, elementsPerPage, token) => {
             headers: { authorization: token },
         });
         getTokensRequest
+            .then((result) => {
+            resolve(result.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+/**
+ * Get a single logger entry's full details (including the `data` payload the
+ * list view omits), loaded on demand when an entry is opened.
+ * @param {String} id The logger entry id
+ * @param {String} token
+ * @returns {Promise<object>}
+ */
+const getItemById = (id, token) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/logger/item/${id}`, {
+            headers: { authorization: token },
+        });
+        request
             .then((result) => {
             resolve(result.data);
         })
@@ -88036,6 +88355,31 @@ const synchronizeWithAuth0 = (authToken) => {
     });
 };
 //# sourceMappingURL=security.js.map
+;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/session.js
+
+/**
+ * Get the authenticated identity and tenant context resolved from the
+ * supplied auth token.
+ * @param {String} authToken The authentication token
+ * @returns {Promise<SessionResponse>}
+ */
+const getSession = (authToken) => {
+    return new Promise((resolve, reject) => {
+        const request = client.get(`/api/v1/session`, authToken
+            ? {
+                headers: { authorization: authToken },
+            }
+            : {});
+        request
+            .then((response) => {
+            resolve(response.data);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+};
+//# sourceMappingURL=session.js.map
 ;// CONCATENATED MODULE: ./node_modules/@stackfactor/client-api/dist/esm/lib/skill.js
 
 /**
@@ -91427,6 +91771,8 @@ const validateResetPasswordCode = (email, code) => {
 
 
 
+
+
 //# sourceMappingURL=index.js.map
 ;// CONCATENATED MODULE: ./src/index.js
 
@@ -91492,7 +91838,7 @@ async function run() {
       );
     }
 
-    // The config dir is used to resolve relative file paths (code, batchCode)
+    // The config dir is used to resolve relative file paths (code, batchCode, checkCode)
     const configDir = (0,external_node_path_namespaceObject.dirname)(fullConfigPath);
 
     // Build the payload from the configuration file
@@ -91503,6 +91849,9 @@ async function run() {
     }
     if (payload.batchCode) {
       core.info(`batchCode: ${payload.batchCode}`);
+    }
+    if (payload.checkCode) {
+      core.info(`checkCode: ${payload.checkCode}`);
     }
 
     let status;
@@ -91624,6 +91973,10 @@ async function buildPayload(config, configDir) {
     payload.batchCode = config.batchCode;
   }
 
+  if (config.checkCode) {
+    payload.checkCode = config.checkCode;
+  }
+
   if (config.capabilities) {
     payload.capabilities = config.capabilities;
   }
@@ -91684,8 +92037,8 @@ async function buildPayload(config, configDir) {
   };
 
   // Add repository files (array of { path, code })
+  payload.repository = [];
   if (Array.isArray(config.repository)) {
-    payload.repository = [];
     for (const repoPath of config.repository) {
       const absPath = (0,external_node_path_namespaceObject.resolve)(configDir, repoPath);
       let code;
@@ -91701,6 +92054,35 @@ async function buildPayload(config, configDir) {
         `Included file in payload: ${repoPath} (${code.length} bytes)`,
       );
     }
+  }
+
+  // Always include the dependency manifest + lockfile from the repo root, so the
+  // Cloud Run build/deploy pipeline has the agent's npm dependencies and a
+  // reproducible lockfile — regardless of whether config.yaml lists them. These
+  // are read from the workspace root (npm's working dir), not configDir, which
+  // may be nested (e.g. src/config.yaml). package.json is required; the lockfile
+  // is strongly recommended but only warned about so existing agents don't break.
+  const workspaceRoot = process.env.GITHUB_WORKSPACE || process.cwd();
+  for (const manifest of ["package.json", "package-lock.json"]) {
+    if (payload.repository.some((file) => (0,external_node_path_namespaceObject.basename)(file.path) === manifest)) {
+      continue; // already provided via config.yaml repository
+    }
+    let code;
+    try {
+      code = await (0,promises_namespaceObject.readFile)((0,external_node_path_namespaceObject.resolve)(workspaceRoot, manifest), "utf-8");
+    } catch (err) {
+      if (manifest === "package.json") {
+        throw new Error(
+          `package.json is required at the repo root for deployment but could not be read: ${err.message}`,
+        );
+      }
+      core.warning(
+        `No ${manifest} at the repo root — agent builds will not be reproducible. Commit a lockfile.`,
+      );
+      continue;
+    }
+    payload.repository.push({ path: manifest, code });
+    core.info(`Included manifest in payload: ${manifest} (${code.length} bytes)`);
   }
 
   return payload;

@@ -61,7 +61,7 @@ async function run() {
       );
     }
 
-    // The config dir is used to resolve relative file paths (code, batchCode)
+    // The config dir is used to resolve relative file paths (code, batchCode, checkCode)
     const configDir = dirname(fullConfigPath);
 
     // Build the payload from the configuration file
@@ -72,6 +72,9 @@ async function run() {
     }
     if (payload.batchCode) {
       core.info(`batchCode: ${payload.batchCode}`);
+    }
+    if (payload.checkCode) {
+      core.info(`checkCode: ${payload.checkCode}`);
     }
 
     let status;
@@ -191,6 +194,10 @@ async function buildPayload(config, configDir) {
 
   if (config.batchCode) {
     payload.batchCode = config.batchCode;
+  }
+
+  if (config.checkCode) {
+    payload.checkCode = config.checkCode;
   }
 
   if (config.capabilities) {
