@@ -173,6 +173,66 @@ function substituteVariables(content, variables, secrets) {
 }
 
 /**
+ * Validates and normalizes the optional `deploymentSettings` block — infra/deploy-time
+ * config the platform build/deploy pipeline consumes (base-image selection + Cloud Run
+ * resource flags). Throws on malformed input so misconfiguration fails fast in CI rather
+ * than at deploy time. Omitted fields fall back to platform defaults.
+ */
+function buildDeploymentSettings(ds) {
+  if (ds === null || typeof ds !== "object" || Array.isArray(ds)) {
+    throw new Error("deploymentSettings must be an object in config.yaml.");
+  }
+  const out = {};
+
+  // Logical base-image selector; the platform maps it to a concrete image/tag.
+  const validBaseImages = ["default", "browser"];
+  if (ds.baseImage !== undefined) {
+    if (!validBaseImages.includes(ds.baseImage)) {
+      throw new Error(
+        `deploymentSettings.baseImage must be one of: ${validBaseImages.join(", ")} (got ${JSON.stringify(ds.baseImage)}).`,
+      );
+    }
+    out.baseImage = ds.baseImage;
+  }
+
+  // cpu may be fractional on Cloud Run (e.g. 0.5), so allow any positive number.
+  if (ds.cpu !== undefined) {
+    if (typeof ds.cpu !== "number" || ds.cpu <= 0) {
+      throw new Error(
+        `deploymentSettings.cpu must be a positive number (got ${JSON.stringify(ds.cpu)}).`,
+      );
+    }
+    out.cpu = ds.cpu;
+  }
+
+  if (ds.memory !== undefined) {
+    if (typeof ds.memory !== "string" || !/^\d+(Mi|Gi|M|G)$/.test(ds.memory)) {
+      throw new Error(
+        `deploymentSettings.memory must be a string like "512Mi" or "2Gi" (got ${JSON.stringify(ds.memory)}).`,
+      );
+    }
+    out.memory = ds.memory;
+  }
+
+  const positiveInt = (key, min) => {
+    if (ds[key] === undefined) return;
+    const n = ds[key];
+    if (typeof n !== "number" || !Number.isInteger(n) || n < min) {
+      throw new Error(
+        `deploymentSettings.${key} must be an integer >= ${min} (got ${JSON.stringify(n)}).`,
+      );
+    }
+    out[key] = n;
+  };
+  positiveInt("concurrency", 1);
+  positiveInt("minInstances", 0);
+  positiveInt("maxInstances", 1);
+  positiveInt("timeoutSeconds", 1);
+
+  return out;
+}
+
+/**
  * Builds the integration payload from the parsed YAML config.
  */
 async function buildPayload(config, configDir) {
@@ -248,6 +308,12 @@ async function buildPayload(config, configDir) {
       fieldType: field.fieldType,
       indexable: field.indexable,
     }));
+  }
+
+  // Map deployment settings (infra/deploy-time config consumed by the platform
+  // build/deploy pipeline: base-image selection + Cloud Run resource flags).
+  if (config.deploymentSettings !== undefined) {
+    payload.deploymentSettings = buildDeploymentSettings(config.deploymentSettings);
   }
 
   // Add repository context metadata
