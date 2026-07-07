@@ -5,6 +5,10 @@ import { resolve, dirname, basename } from "node:path";
 import yaml from "js-yaml";
 import { integration, client } from "@stackfactor/client-api";
 
+// Licensed apps an integration can be scoped to. Mirrors the platform's
+// INTEGRATION_APP_VALUES / APPS registry in @stackfactor/backend-core.
+const VALID_APPS = ["core", "admin", "exceed", "shield"];
+
 async function run() {
   try {
     // Read inputs
@@ -264,23 +268,26 @@ async function buildPayload(config, configDir) {
     payload.capabilities = config.capabilities;
   }
 
-  if (config.apps !== undefined) {
-    if (!Array.isArray(config.apps)) {
-      throw new Error("apps must be an array of strings in config.yaml.");
-    }
-    const validApps = ["core", "admin", "exceed", "shield"];
-    const invalid = config.apps.filter(
-      (app) => typeof app !== "string" || !validApps.includes(app),
+  // apps is required and gates which tenants (by licensed app) may see this
+  // integration in their configuration. A missing or empty apps array would
+  // leave the integration visible to every tenant regardless of licensing, so
+  // fail the deploy rather than publish an unscoped integration.
+  if (!Array.isArray(config.apps) || config.apps.length === 0) {
+    throw new Error(
+      `apps is required in config.yaml and must be a non-empty array of strings. Valid values are: ${VALID_APPS.join(", ")}.`,
     );
-    if (invalid.length > 0) {
-      throw new Error(
-        `apps contains invalid value(s): ${invalid
-          .map((v) => JSON.stringify(v))
-          .join(", ")}. Valid values are: ${validApps.join(", ")}.`,
-      );
-    }
-    payload.apps = config.apps;
   }
+  const invalidApps = config.apps.filter(
+    (app) => typeof app !== "string" || !VALID_APPS.includes(app),
+  );
+  if (invalidApps.length > 0) {
+    throw new Error(
+      `apps contains invalid value(s): ${invalidApps
+        .map((v) => JSON.stringify(v))
+        .join(", ")}. Valid values are: ${VALID_APPS.join(", ")}.`,
+    );
+  }
+  payload.apps = config.apps;
 
   // Map constants and variables
   if (config.constantsAndVars) {
